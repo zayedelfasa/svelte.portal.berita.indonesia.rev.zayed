@@ -12,6 +12,10 @@ interface Entry<T> {
 const store = new Map<string, Entry<unknown>>();
 const TTL_MS = 10 * 60 * 1000;
 
+export function invalidateCache(prefix: string) {
+	for (const k of [...store.keys()]) if (k === prefix || k.startsWith(prefix + ':') || k.startsWith(prefix + '/')) store.delete(k);
+}
+
 export async function cached<T>(key: string, fn: () => Promise<T>): Promise<T> {
 	const hit = store.get(key);
 	if (hit && hit.expires > Date.now()) return hit.value as T;

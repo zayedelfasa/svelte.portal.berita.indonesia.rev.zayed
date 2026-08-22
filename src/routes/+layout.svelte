@@ -22,8 +22,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </svelte:head>
 
-<div class="flex min-h-screen justify-center bg-[#f3f4f6]">
-	<div class="flex min-h-screen w-full max-w-[420px] flex-col bg-white shadow-sm">
+<div class="flex min-h-screen justify-center bg-[#f3f4f6] dark:bg-neutral-950">
+	<div class="flex min-h-screen w-full max-w-[420px] flex-col bg-white shadow-sm dark:bg-neutral-900">
 		<Header />
 		<main class="flex-1">{@render children()}</main>
 		<Footer />

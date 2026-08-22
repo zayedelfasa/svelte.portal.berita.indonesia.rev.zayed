@@ -15,30 +15,30 @@
 			value={data.q}
 			placeholder="Cari judul berita..."
 			autofocus
-			class="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 focus:border-gray-300 focus:ring-1 focus:ring-gray-200"
+			class="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 focus:border-gray-300 focus:ring-1 focus:ring-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
 		/>
 		<button
 			type="submit"
-			class="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+			class="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
 		>
 			Cari
 		</button>
 	</form>
 
 	{#if !data.q}
-		<p class="mt-6 text-center text-xs leading-relaxed text-gray-400">
+		<p class="mt-6 text-center text-xs leading-relaxed text-gray-400 dark:text-neutral-500">
 			Ketik kata kunci di atas untuk mencari judul berita<br />lintas 11 media lokal.
 		</p>
 	{:else if data.results.length === 0}
-		<p class="mt-6 text-center text-sm text-gray-500">
+		<p class="mt-6 text-center text-sm text-gray-500 dark:text-neutral-400">
 			Tidak ditemukan untuk "<span class="font-semibold">{data.q}</span>"
 		</p>
-		<p class="mt-1 text-center text-[11px] text-gray-400">Coba kata kunci lain</p>
+		<p class="mt-1 text-center text-[11px] text-gray-400 dark:text-neutral-500">Coba kata kunci lain</p>
 	{:else}
-		<p class="mt-3 text-[11px] text-gray-400">
-			{data.results.length} hasil untuk "<span class="font-medium text-gray-600">{data.q}</span>"
+		<p class="mt-3 text-[11px] text-gray-400 dark:text-neutral-500">
+			{data.results.length} hasil untuk "<span class="font-medium text-gray-600 dark:text-neutral-300">{data.q}</span>"
 		</p>
-		<div class="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-100">
+		<div class="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-100 dark:divide-neutral-800 dark:border-neutral-800">
 			{#each data.results as article, i (article.url)}
 				<NewsItem {article} index={i} />
 			{/each}
