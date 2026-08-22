@@ -1,35 +1,33 @@
 import type { SourceDef } from '$lib/types';
-import { fetchDetik } from '$lib/server/sources/detik';
-import { fetchCnn } from '$lib/server/sources/cnn';
-import { fetchAntara } from '$lib/server/sources/antara';
-import { fetchCnbc } from '$lib/server/sources/cnbc';
-import { fetchTempo } from '$lib/server/sources/tempo';
-import { fetchRepublika } from '$lib/server/sources/republika';
-import { fetchOkezone } from '$lib/server/sources/okezone';
-import { fetchKumparan } from '$lib/server/sources/kumparan';
-import { fetchJpnn } from '$lib/server/sources/jpnn';
-import { fetchMediaIndonesia } from '$lib/server/sources/mediaindonesia';
-import { fetchInews } from '$lib/server/sources/inews';
+import { fetchDetikAdapter } from '$lib/server/sources/detik';
+import { fetchCnnAdapter } from '$lib/server/sources/cnn';
+import { fetchAntaraAdapter } from '$lib/server/sources/antara';
+import { fetchCnbcAdapter } from '$lib/server/sources/cnbc';
+import { fetchTempoAdapter } from '$lib/server/sources/tempo';
+import { fetchRepublikaAdapter } from '$lib/server/sources/republika';
+import { fetchOkezoneAdapter } from '$lib/server/sources/okezone';
+import { fetchKumparanAdapter } from '$lib/server/sources/kumparan';
+import { fetchJpnnAdapter } from '$lib/server/sources/jpnn';
+import { fetchMediaIndonesiaAdapter } from '$lib/server/sources/mediaindonesia';
+import { fetchInewsAdapter } from '$lib/server/sources/inews';
 
 /**
  * Registry 11 media lokal Indonesia.
- * Urutan = urutan tampil di halaman utama.
- *
- * Catatan riset (lihat PLAN.md):
- * - Tribun News, Jawa Pos, Suara.com dibuang karena endpoint/RSS-nya
- *   mati atau bot-block (HTTP 403/500 saat riset).
- * - Penggantinya: JPNN.com, Media Indonesia, iNews — semua RSS resmi hidup.
+ * — Media dengan kategori lengkap: Antara, CNN, Detik, Okezone, iNews (6 kategori)
+ * — Sebagian: Tempo 5, CNBBC 4, Republika 4
+ * — Hanya headline: Kumparan, JPNN, Media Indonesia
+ * Lihat PLAN_TIER_1.md untuk tabel verifikasi.
  */
 export const SOURCES: SourceDef[] = [
-	{ id: 'detik', name: 'Detik', fetchTop: fetchDetik },
-	{ id: 'cnn', name: 'CNN Indonesia', fetchTop: fetchCnn },
-	{ id: 'antara', name: 'Antara News', fetchTop: fetchAntara },
-	{ id: 'cnbc', name: 'CNBC Indonesia', fetchTop: fetchCnbc },
-	{ id: 'tempo', name: 'Tempo', fetchTop: fetchTempo },
-	{ id: 'republika', name: 'Republika', fetchTop: fetchRepublika },
-	{ id: 'okezone', name: 'Okezone', fetchTop: fetchOkezone },
-	{ id: 'kumparan', name: 'Kumparan', fetchTop: fetchKumparan },
-	{ id: 'jpnn', name: 'JPNN.com', fetchTop: fetchJpnn },
-	{ id: 'mediaindonesia', name: 'Media Indonesia', fetchTop: fetchMediaIndonesia },
-	{ id: 'inews', name: 'iNews', fetchTop: fetchInews }
+	{ id: 'detik', name: 'Detik', ...fetchDetikAdapter },
+	{ id: 'cnn', name: 'CNN Indonesia', ...fetchCnnAdapter },
+	{ id: 'antara', name: 'Antara News', ...fetchAntaraAdapter },
+	{ id: 'cnbc', name: 'CNBC Indonesia', ...fetchCnbcAdapter },
+	{ id: 'tempo', name: 'Tempo', ...fetchTempoAdapter },
+	{ id: 'republika', name: 'Republika', ...fetchRepublikaAdapter },
+	{ id: 'okezone', name: 'Okezone', ...fetchOkezoneAdapter },
+	{ id: 'kumparan', name: 'Kumparan', ...fetchKumparanAdapter },
+	{ id: 'jpnn', name: 'JPNN.com', ...fetchJpnnAdapter },
+	{ id: 'mediaindonesia', name: 'Media Indonesia', ...fetchMediaIndonesiaAdapter },
+	{ id: 'inews', name: 'iNews', ...fetchInewsAdapter }
 ];

@@ -1,3 +1,3 @@
 import { makeAggregatorSource } from './aggSource';
 
-export const fetchKumparan = makeAggregatorSource('kumparan', '/kumparan-news');
+export const fetchKumparanAdapter = makeAggregatorSource('kumparan', '/kumparan-news');

@@ -1,19 +1,31 @@
 import { SOURCES } from '$lib/config/sources';
+import { isCategoryId } from '$lib/categories';
 import type { SourceResult } from '$lib/types';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ setHeaders }) => {
+export const load: PageServerLoad = async ({ url, setHeaders }) => {
+	const raw = url.searchParams.get('kategori');
+	const kategori = isCategoryId(raw) ? raw : null;
+	const fetchedAt = new Date().toISOString();
+
+	const targetSources =
+		kategori != null ? SOURCES.filter((s) => s.supportedCategories?.includes(kategori)) : SOURCES;
+	const unsupported = kategori != null ? SOURCES.length - targetSources.length : 0;
+
 	const settled = await Promise.allSettled(
-		SOURCES.map(async (s) => ({
+		targetSources.map(async (s) => ({
 			sourceId: s.id,
 			name: s.name,
 			ok: true as const,
-			articles: await s.fetchTop(3)
+			articles:
+				kategori != null && s.fetchCategory
+					? await s.fetchCategory(kategori, 3)
+					: await s.fetchTop(3)
 		}))
 	);
 
 	const results: SourceResult[] = settled.map((r, i) => {
-		const s = SOURCES[i];
+		const s = targetSources[i];
 		if (r.status === 'fulfilled' && r.value.articles.length > 0) return r.value;
 		return {
 			sourceId: s.id,
@@ -28,5 +40,5 @@ export const load: PageServerLoad = async ({ setHeaders }) => {
 	});
 
 	setHeaders({ 'cache-control': 'public, s-maxage=600, stale-while-revalidate=1800' });
-	return { results };
+	return { results, fetchedAt, kategori, unsupported };
 };

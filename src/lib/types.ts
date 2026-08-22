@@ -13,11 +13,30 @@ export interface Article {
 	image?: string;
 }
 
+export type CategoryId =
+	| 'nasional'
+	| 'ekonomi'
+	| 'tekno'
+	| 'olahraga'
+	| 'hiburan'
+	| 'gayahidup';
+
+/** Adapter satu media — hasil factory makeRssSource / makeAggregatorSource */
+export interface SourceAdapter {
+	fetchTop: (limit: number) => Promise<Article[]>;
+	/** hanya ada jika media mendukung kategori */
+	fetchCategory?: (cat: CategoryId, limit: number) => Promise<Article[]>;
+	/** daftar kategori yang didukung (pendamping fetchCategory) */
+	supportedCategories?: readonly CategoryId[];
+}
+
 export interface SourceDef {
 	id: string;
 	name: string;
 	/** ambil N artikel teratas (sudah lewat cache) */
 	fetchTop: (limit: number) => Promise<Article[]>;
+	fetchCategory?: (cat: CategoryId, limit: number) => Promise<Article[]>;
+	supportedCategories?: readonly CategoryId[];
 }
 
 /** hasil fetch satu sumber untuk UI */

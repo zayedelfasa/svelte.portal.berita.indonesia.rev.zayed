@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { clock } from '$lib/utils/clock.svelte';
 	import { timeAgo } from '$lib/time';
 	import type { Article } from '$lib/types';
 
 	let { article, sourceName }: { article: Article; sourceName: string } = $props();
 
 	let imgBroken = $state(false);
+	const label = $derived(timeAgo(article.publishedAt, clock.now));
 </script>
 
 <article class="pb-10">
@@ -21,7 +23,7 @@
 	<div class="px-4 pt-4">
 		<p class="text-[11px] font-semibold tracking-wider text-red-500 uppercase">{sourceName}</p>
 		<h1 class="mt-1.5 text-xl leading-tight font-bold text-gray-900">{article.title}</h1>
-		<p class="mt-2 text-[11px] text-gray-400">{timeAgo(article.publishedAt)}</p>
+		<p class="mt-2 text-[11px] text-gray-400">{label}</p>
 
 		{#if article.summary}
 			<p class="mt-3 text-sm leading-relaxed text-gray-600">{article.summary}</p>

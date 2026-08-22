@@ -3,8 +3,16 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import { clock } from '$lib/utils/clock.svelte';
 
 	let { children } = $props();
+
+	$effect(() => {
+		const t = setInterval(() => {
+			clock.now = Date.now();
+		}, 30_000);
+		return () => clearInterval(t);
+	});
 </script>
 
 <svelte:head>

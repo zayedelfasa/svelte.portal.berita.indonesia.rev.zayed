@@ -1,3 +1,7 @@
 import { makeRssSource } from './rssSource';
 
-export const fetchMediaIndonesia = makeRssSource('mediaindonesia', 'https://mediaindonesia.com/feed');
+/** Hanya headline umum — tidak ada feed kategori terverifikasi */
+export const fetchMediaIndonesiaAdapter = makeRssSource(
+	'mediaindonesia',
+	'https://mediaindonesia.com/feed'
+);
