@@ -214,6 +214,12 @@ svelte.portal.berita.indonesia/
 | Hit berlebihan ke API publik | Cache memori 10 menit + `s-maxage=600` di CDN |
 | Limit Vercel Hobby | Cukup — statis + serverless ringan, tanpa DB |
 
+## Revisi 1 (implementasi setelah user review)
+
+1. **Tombol back di header** — muncul otomatis di semua halaman selain home (`/baca`, `/media/*`). `history.back()` dengan fallback ke `/`. File: `Header.svelte` (deteksi route via `$app/state`).
+2. **"Lihat Lainnya" per media** — link di header tiap section home → route baru `/media/<id>`.
+3. **Halaman `/media/[source]`** — 10 artikel terbaru, tombol **"+ Muat lainnya"** menambah 10 per klik dari pool yang sudah di-cache (opsi A — tanpa request baru; maksimal sebanyak yang feed sediakan). Pool habis → tombol hilang. `visible` di-reset saat pindah media via `$effect`.
+
 ## Di Luar Scope (Sekarang)
 
 - Monetisasi QRIS (slot footer disiapkan saja)

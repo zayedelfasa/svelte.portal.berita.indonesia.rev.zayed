@@ -8,7 +8,12 @@
 <section>
 	<div class="flex items-center justify-between px-4 pb-1">
 		<h2 class="text-xs font-bold tracking-wider text-gray-900 uppercase">{result.name}</h2>
-		<span class="text-[10px] text-gray-300">3 teratas</span>
+		<a
+			href="/media/{result.sourceId}"
+			class="text-[11px] font-medium text-red-500 transition-colors hover:text-red-600"
+		>
+			Lihat Lainnya ›
+		</a>
 	</div>
 
 	{#if result.ok && result.articles.length > 0}
