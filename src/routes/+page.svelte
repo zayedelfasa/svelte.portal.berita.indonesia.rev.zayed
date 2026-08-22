@@ -9,8 +9,8 @@
 		'whitespace-nowrap rounded-full bg-gray-900 px-3 py-1.5 text-xs font-medium text-white';
 </script>
 
-<!-- Chip kategori — sticky di bawah Header -->
-<div class="sticky top-[60px] z-[9] border-b border-gray-100 bg-white">
+<!-- Chip kategori — sticky di bawah Header (top via --header-h) -->
+<div class="sticky z-[9] border-b border-gray-100 bg-white" style="top: var(--header-h, 72px)">
 	<div class="flex gap-1.5 overflow-x-auto px-2 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 		<a href="/" class={data.kategori == null ? active : inactive}>Semua</a>
 		{#each CATEGORIES as c (c.id)}

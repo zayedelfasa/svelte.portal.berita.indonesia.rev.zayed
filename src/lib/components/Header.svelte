@@ -24,6 +24,13 @@
 		}
 	}
 
+	let headerEl: HTMLElement | undefined = $state(undefined);
+
+	function syncHeaderH() {
+		if (!headerEl) return;
+		document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+	}
+
 	$effect(() => {
 		today = new Intl.DateTimeFormat('id-ID', {
 			weekday: 'long',
@@ -32,9 +39,27 @@
 			year: 'numeric'
 		}).format(new Date());
 	});
+
+	$effect(() => {
+		void isHome;
+		void fetchedAt;
+		requestAnimationFrame(syncHeaderH);
+	});
+
+	$effect(() => {
+		if (typeof window === 'undefined' || !headerEl) return;
+		const ro = new ResizeObserver(syncHeaderH);
+		ro.observe(headerEl);
+		window.addEventListener('resize', syncHeaderH);
+		syncHeaderH();
+		return () => {
+			ro.disconnect();
+			window.removeEventListener('resize', syncHeaderH);
+		};
+	});
 </script>
 
-<header class="sticky top-0 z-10 border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
+<header bind:this={headerEl} class="sticky top-0 z-10 border-b border-gray-100 bg-white/95 px-4 py-3 backdrop-blur">
 	<div class="flex items-center justify-between gap-2">
 		<div class="flex items-center gap-2.5">
 			{#if !isHome}

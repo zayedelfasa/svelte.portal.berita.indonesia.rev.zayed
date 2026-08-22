@@ -15,9 +15,9 @@ export function timeAgo(iso: string, now: number = Date.now()): string {
 	);
 }
 
-/** artikel dianggap BARU jika < 60 menit */
+/** artikel dianggap BARU jika < 30 menit */
 export function isNew(iso: string, now: number = Date.now()): boolean {
 	const t = new Date(iso).getTime();
 	if (!Number.isFinite(t)) return false;
-	return now - t < 60 * 60 * 1000;
+	return now - t < 30 * 60 * 1000;
 }
