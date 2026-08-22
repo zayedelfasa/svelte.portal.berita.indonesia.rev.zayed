@@ -2,11 +2,25 @@
 	import { bookmarks, removeBookmark } from '$lib/utils/bookmarks.svelte';
 	import { clock } from '$lib/utils/clock.svelte';
 	import { timeAgo } from '$lib/time';
+	import ArticleView from '$lib/components/ArticleView.svelte';
+	import type { Article } from '$lib/types';
+
+	let selected: Article | null = $state(null);
 </script>
 
 <svelte:head>
 	<title>Tersimpan — Portal Berita</title>
 </svelte:head>
+
+{#if selected}
+	<div class="border-b border-gray-100 dark:border-neutral-800">
+		<div class="flex items-center justify-between px-4 py-2">
+			<span class="text-[11px] font-medium text-gray-400 dark:text-neutral-500">Pratinjau tersimpan</span>
+			<button onclick={() => (selected = null)} class="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-neutral-300">Tutup ✕</button>
+		</div>
+		<ArticleView article={selected} sourceName={selected.source} />
+	</div>
+{/if}
 
 <div class="px-4 py-4">
 	<h2 class="text-sm font-bold text-gray-900 dark:text-neutral-100">Tersimpan</h2>
@@ -32,8 +46,9 @@
 					</a>
 					<p class="mt-1 text-[11px] text-gray-400 dark:text-neutral-500">{timeAgo(article.publishedAt, clock.now)} · {article.source}</p>
 					<div class="mt-2 flex gap-2">
-						<a href="/baca?source={article.source}&u={encodeURIComponent(article.url)}" class="text-[11px] font-medium text-red-500 hover:text-red-600">Buka di portal ›</a>
-						<button onclick={() => removeBookmark(article.url)} class="text-[11px] text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300">Hapus</button>
+						<button onclick={() => (selected = article)} class="text-[11px] font-medium text-red-500 hover:text-red-600">Lihat ›</button>
+						<a href={article.url} target="_blank" rel="noopener noreferrer" class="text-[11px] text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300">Sumber ↗</a>
+						<button onclick={() => { removeBookmark(article.url); if (selected?.url === article.url) selected = null; }} class="text-[11px] text-gray-400 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-neutral-300">Hapus</button>
 					</div>
 				</div>
 			</div>
