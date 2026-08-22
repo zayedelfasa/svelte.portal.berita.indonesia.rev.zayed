@@ -1,6 +1,7 @@
 <script lang="ts">
 	import SourceSection from '$lib/components/SourceSection.svelte';
 	import SkeletonSection from '$lib/components/SkeletonSection.svelte';
+	import Ticker from '$lib/components/Ticker.svelte';
 	import { CATEGORIES } from '$lib/categories';
 	import { navigating } from '$app/state';
 	let { data } = $props();
@@ -14,6 +15,12 @@
 	const filtered = $derived(
 		selectedSource ? data.results.filter((r) => r.sourceId === selectedSource) : data.results
 	);
+	const tickerArticles = $derived(
+		data.results
+			.flatMap((r) => r.articles)
+			.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+			.slice(0, 8)
+	);
 
 	$effect(() => {
 		void data.kategori;
@@ -21,6 +28,8 @@
 		selectedSource = null;
 	});
 </script>
+
+<Ticker articles={tickerArticles} />
 
 <!-- Chip kategori — sticky di bawah Header (top via --header-h) -->
 <div class="sticky z-[9] border-b border-gray-100 bg-white dark:border-neutral-800 dark:bg-neutral-900" style="top: var(--header-h, 72px)">

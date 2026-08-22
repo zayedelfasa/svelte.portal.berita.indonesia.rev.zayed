@@ -3,6 +3,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import { clock } from '$lib/utils/clock.svelte';
 	import { timeAgo } from '$lib/time';
+	import { bookmarks } from '$lib/utils/bookmarks.svelte';
+	import { thumbState, toggleThumb } from '$lib/utils/settings.svelte';
 
 	let today = $state('');
 	const isHome = $derived(page.url.pathname === '/');
@@ -97,6 +99,33 @@
 		</div>
 
 		<div class="flex items-center gap-1">
+			<a
+				href="/simpan"
+				aria-label="Tersimpan"
+				class="relative flex h-7 w-7 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+					<path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16l-6-3-6 3z" />
+				</svg>
+				{#if bookmarks.length > 0}
+					<span class="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-none text-white">
+						{bookmarks.length}
+					</span>
+				{/if}
+			</a>
+			<button
+				onclick={toggleThumb}
+				aria-label="Gambar"
+				aria-pressed={thumbState.enabled}
+				class="flex h-7 w-7 items-center justify-center rounded-full transition-colors {thumbState.enabled
+					? 'bg-gray-900 text-white dark:bg-white dark:text-neutral-900'
+					: 'text-gray-500 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800'}"
+				title={thumbState.enabled ? 'Sembunyikan gambar' : 'Tampilkan gambar'}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+					<rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+				</svg>
+			</button>
 			<button
 				onclick={toggleTheme}
 				aria-label="Ganti tema"

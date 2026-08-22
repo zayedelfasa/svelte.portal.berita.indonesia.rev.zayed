@@ -2,6 +2,7 @@
 	import { clock } from '$lib/utils/clock.svelte';
 	import { timeAgo } from '$lib/time';
 	import type { Article } from '$lib/types';
+	import { bookmarks, isBookmarked, toggleBookmark } from '$lib/utils/bookmarks.svelte';
 	import Toast from './Toast.svelte';
 
 	let { article, sourceName }: { article: Article; sourceName: string } = $props();
@@ -10,6 +11,7 @@
 	let toastMsg = $state('');
 	let toastShow = $state(false);
 	const label = $derived(timeAgo(article.publishedAt, clock.now));
+	const saved = $derived(isBookmarked(article.url));
 
 	function showToast(msg: string) {
 		toastMsg = msg;
@@ -33,6 +35,11 @@
 		} catch {
 			showToast('Gagal menyalin link');
 		}
+	}
+
+	function onBookmark() {
+		const added = toggleBookmark(article);
+		showToast(added ? 'Disimpan ✓' : 'Dihapus');
 	}
 </script>
 
@@ -70,6 +77,14 @@
 				class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
 			>
 				Bagikan
+			</button>
+			<button
+				onclick={onBookmark}
+				class="inline-flex items-center gap-1.5 rounded-full border px-5 py-2.5 text-xs font-medium transition-colors {saved
+					? 'border-red-200 bg-red-50 text-red-600 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400'
+					: 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700'}"
+			>
+				{saved ? 'Tersimpan ✓' : 'Simpan'}
 			</button>
 		</div>
 	</div>
