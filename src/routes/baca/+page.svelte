@@ -4,6 +4,7 @@
 	import { absoluteUrl } from '$lib/utils/url';
 	let { data } = $props();
 
+	const marketPool = $derived((data.market?.items ?? []).map((i) => ({ symbol: i.symbol })));
 	const ogImage = $derived(absoluteUrl(data.article.image));
 </script>
 
@@ -18,7 +19,7 @@
 	{#if ogImage}<meta name="twitter:image" content={ogImage} />{/if}
 </svelte:head>
 
-<ArticleView article={data.article} sourceName={data.sourceName} />
+<ArticleView article={data.article} sourceName={data.sourceName} {marketPool} />
 
 {#if data.more.length > 0}
 	<section class="border-t border-gray-100 dark:border-neutral-800">
@@ -27,7 +28,7 @@
 		</h2>
 		<div class="divide-y divide-gray-100 pb-4 dark:divide-neutral-800">
 			{#each data.more as article, i (article.url)}
-				<NewsItem {article} index={i + 1} />
+				<NewsItem {article} index={i + 1} {marketPool} />
 			{/each}
 		</div>
 	</section>

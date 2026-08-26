@@ -1,0 +1,82 @@
+# DOC: JANGAN GUNAKAN DUMMY — Kebijakan Data Market
+
+> **Prinsip:** Lebih baik kosong jujur daripada angka palsu kelihatan live.
+> Berlaku untuk `src/lib/server/market.ts` + `src/lib/server/cache.ts` + `src/routes/market/*` + `MarketTicker.svelte`.
+
+## 1. Masalah Dummy Lama
+
+```ts
+// ❌ DILARANG — dihapus 2026-08-26
+if (items.length === 0) return [
+  { symbol: 'IHSG', price: 7234.5, change24h: 0.85, currency:'IDR', type:'idx' },
+  { symbol: 'USD/IDR', price: 16220, change24h: 0.12, currency:'IDR', type:'forex' }
+];
+```
+- Angka hardcode `7234.5` seolah live, padahal statis.
+- `fetchedAt = now()` → tidak trigger banner `isStale >30m`, user tertipu.
+- Risiko komplain + OJK disclaimer jebol.
+
+## 2. Kebijakan Baru
+
+### Aturan
+1. **Jangan hardcode harga** di `market.ts`. Hanya `isEstimated: true` untuk LQ45 derived yang diberi label `est`.
+2. **Gagal = kosong atau stale sopan.** Urutan fallback:
+   ```
+   fetch Yahoo query1 → query2 → USD/IDR fail → exchangerate.host/convert (0-key)
+   → Promise.allSettled → items=[] ? cek peekCache('market:ticker') stale <24j
+   → ada stale → return stale (fetchedAt lama → banner sopan "Menampilkan data terakhir")
+   → tidak ada stale → return { items: [], fetchedAt: now } → UI honest empty sopan
+   ```
+3. **UI jujur bahasa sopan:** `+page.svelte` empty → `Data market IHSG/LQ45 sementara tidak tersedia — Sumber Yahoo Finance sedang sibuk, kami tidak menampilkan angka perkiraan.` + tombol `Muat ulang`. Stale → `Menampilkan data terakhir — diperbarui 12m lalu — Sumber sedang sibuk.` `MarketTicker` hidden kalau `items=[]`.
+4. **Cache jujur TTL split:** `cache.ts` `TTL.crypto 2m`, `TTL.idx 15m`, `TTL.forex 10m`, `cached(key,fn,ttl)` + `peekCache()` lastGood, `cached()` try/catch fallback ke stale. Jangan delete stale saat TTL habis.
+
+### Yang Masih Boleh
+- `LQ45 estimasi` dari `IHSG*0.135` → wajib `isEstimated:true` + badge `est` + name `LQ45 (estimasi)`.
+- CoinGecko fail → `fetchCrypto()` return `[]`, bukan dummy crypto.
+
+## 3. Implementasi Sekarang
+
+**`cache.ts`**
+- `TTL = { crypto:2m, idx:15m, forex:10m }` + `cached(key,fn,ttlMs)`
+- `export function peekCache<T>(key)` — ambil stale tanpa cek TTL (max 24j di market.ts)
+- `cached()` wrap `fn()` dalam `try/catch`, kalau throw dan ada `hit` → return `hit.value`
+
+**`market.ts`**
+- `fetchCrypto()` → `cached('market:crypto', fn, TTL.crypto)` 2m
+- `fetchForexFallback()` → `api.exchangerate.host/convert?from=USD&to=IDR` 0-key kalau Yahoo USD/IDR 403 → `change:null`
+- `fetchYahooItem()` loop `hosts=[query1, query2]` — layer 2, kalau USD/IDR masih fail → coba `fetchForexFallback()`
+- `fetchIdxForex()` → `cached('market:idx', fn, TTL.idx)` 15m, jika `items.length===0` → `return []` (hapus dummy)
+- `fetchMarketData()` → `cached('market:ticker', fn, TTL.crypto)` + cek `peekCache` stale <24j
+
+**`+page.svelte`**
+- Empty: card slate sopan `Data market IHSG/LQ45 sementara tidak tersedia — Sumber Yahoo Finance sedang sibuk, kami tidak menampilkan angka perkiraan. Silakan muat ulang beberapa saat lagi.`
+- Stale: banner amber sopan `Menampilkan data terakhir — diperbarui X — Sumber Yahoo Finance / CoinGecko sedang sibuk. Data adalah cache terakhir.`
+
+**`MarketTicker.svelte`**
+- Tetap hidden jika `items.length===0`, tidak paksa dummy
+
+## 4. Curl Test Jujur
+
+```bash
+# Cek Yahoo — kalau 403 harus kosong, bukan 7234
+curl -s -L -A "Mozilla/5.0 ..." -H "Accept: application/json" \
+  "https://query1.finance.yahoo.com/v8/finance/chart/%5EJKSE?interval=1d&range=2d" | jq . 2>&1 | head
+
+# Cek portal — force refresh, harus lihat honest empty jika Yahoo block
+curl -s "http://localhost:5173/api/source/idx?force=1" | jq .
+```
+
+## 5. Checklist PR
+
+- [ ] `grep -r "7234.5" src/` = 0 hasil
+- [ ] `grep -r "dummy" docs/` hanya di doc ini
+- [ ] `npm run check` 0 error
+- [ ] Test: matikan internet → `/market` tampil card jujur, bukan angka
+
+## 6. Roadmap
+
+- Phase selanjutnya: tambah `Investing`/`kuarsa` sebagai layer 3, tetap tanpa dummy.
+- Jika butuh angka fallback, pakai `lastGood` stale + label `Data 45m lalu` + banner, bukan hardcode.
+
+---
+Ref: `AGENTS.md §5` cache pattern, `ARCHITECTURE.md`, `DOC_FITUR_MARKET_TENTANG.md` Gap A2.

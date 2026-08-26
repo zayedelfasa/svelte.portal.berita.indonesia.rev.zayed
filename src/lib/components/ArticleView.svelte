@@ -3,9 +3,12 @@
 	import { timeAgo } from '$lib/time';
 	import type { Article } from '$lib/types';
 	import { bookmarks, isBookmarked, toggleBookmark } from '$lib/utils/bookmarks.svelte';
+	import { tagArticle } from '$lib/marketTag';
 	import Toast from './Toast.svelte';
 
-	let { article, sourceName }: { article: Article; sourceName: string } = $props();
+	let { article, sourceName, marketPool = [] as { symbol: string }[] }: { article: Article; sourceName: string; marketPool?: { symbol: string }[] } = $props();
+
+	const tags = $derived(tagArticle(article, marketPool));
 
 	let imgBroken = $state(false);
 	let toastMsg = $state('');
@@ -61,6 +64,14 @@
 
 		{#if article.summary}
 			<p class="mt-3 text-sm leading-relaxed text-gray-600 dark:text-neutral-300">{article.summary}</p>
+		{/if}
+
+		{#if tags.length > 0}
+			<div class="mt-3 flex flex-wrap gap-1">
+				{#each tags as t (t.symbol)}
+					<a href="/market/{t.slug}" class="rounded-full bg-slate-900 px-2.5 py-1 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">{t.symbol}</a>
+				{/each}
+			</div>
 		{/if}
 
 		<div class="mt-6 flex flex-wrap gap-2">

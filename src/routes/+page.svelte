@@ -12,6 +12,7 @@
 		'whitespace-nowrap rounded-full bg-gray-900 px-3 py-1.5 text-xs font-medium text-white dark:bg-white dark:text-neutral-900';
 
 	let selectedSource: string | null = $state(null);
+	const marketPool = $derived((data.market?.items ?? []).map((i) => ({ symbol: i.symbol })));
 	const filtered = $derived(
 		selectedSource ? data.results.filter((r) => r.sourceId === selectedSource) : data.results
 	);
@@ -70,7 +71,7 @@
 {:else}
 	<div class="space-y-6 px-0 py-4">
 		{#each filtered as result (result.sourceId)}
-			<SourceSection {result} />
+			<SourceSection {result} {marketPool} />
 		{/each}
 		{#if filtered.length === 0}
 			<p class="px-4 py-6 text-center text-xs text-gray-400 dark:text-neutral-500">Tidak ada sumber yang dipilih.</p>

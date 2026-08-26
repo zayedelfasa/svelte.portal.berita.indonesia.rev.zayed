@@ -1,7 +1,10 @@
 import type { PageServerLoad } from './$types';
-import { fetchMarketData } from '$lib/server/market';
+import { fetchMarketData, fetchTrending } from '$lib/server/market';
 
 export const load: PageServerLoad = async () => {
-	const market = await fetchMarketData().catch(() => null);
-	return { marketDetail: market };
+	const [market, trending] = await Promise.allSettled([fetchMarketData(), fetchTrending()]);
+	return {
+		marketDetail: market.status === 'fulfilled' ? market.value : null,
+		marketTrending: trending.status === 'fulfilled' ? trending.value : []
+	};
 };

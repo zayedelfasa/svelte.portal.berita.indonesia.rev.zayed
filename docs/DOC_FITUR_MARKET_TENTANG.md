@@ -1,7 +1,7 @@
 # Dokumentasi Fitur — Market Ticker + Bottom Navigation + Tentang Aplikasi
 
-> Branch `dev` — 2026-01-04 (update: merge PLAN_MARKET.md)
-> Status: **Phase 0 Done**, Phase 1-3 Planned — `svelte-check 0 error`, `vite build` 7.47s
+> Branch `dev` — update 2026-08-26
+> Status: **Phase 0 Done · Phase 1 Done · Tier A A1-A4 Done · Phase 2-3 Planned** — `svelte-check 0 error`, `vite build pass`
 > Legenda: ✅ Done · ⏳ Planned · 🔄 In Progress — lihat §11 Status Tracker
 
 ## 1. Ringkasan
@@ -15,7 +15,7 @@ Tiga fitur utama ditambahkan untuk memperluas portal dari **agregator berita** m
 | **Halaman Market** | `/market` | Detail tabel Saham/Forex + Crypto Top 5 dengan harga & perubahan 24j |
 | **Halaman Tentang** | `/tentang` | Info aplikasi, 3 fitur utama, teknologi, sumber data, versi |
 
-Semua data market **gratis tanpa API key berbayar**, cache 10 menit, gagal fetch tidak jatuhkan halaman.
+Semua data market **gratis tanpa API key berbayar**, cache terpisah, gagal fetch tidak jatuhkan halaman. **Dilarang memakai dummy harga.** Jika sumber gagal, gunakan fallback sumber lain, stale cache, atau tampilkan pesan sopan.
 
 ---
 
@@ -79,7 +79,7 @@ GET https://api.coingecko.com/api/v3/coins/markets
   ?vs_currency=usd
   &ids=bitcoin,ethereum,solana,binancecoin,tether
   &order=market_cap_desc&per_page=5&page=1
-  &sparkline=false&price_change_percentage=24h
+  &sparkline=true&price_change_percentage=24h
 ```
 
 | Field | Mapping |
@@ -93,7 +93,8 @@ Limit gratis: ~10-50 req/menit. Dengan cache 10 menit + CDN = aman untuk traffic
 ### Yahoo Finance (IDX & Forex — tanpa key)
 
 ```
-GET https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=2d
+GET https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=7d
+Fallback host: query2.finance.yahoo.com; USD/IDR fallback: exchangerate.host
 Symbols: ^JKSE (IHSG), IDR=X (USD/IDR), LQ45 (derived)
 ```
 
@@ -103,11 +104,7 @@ Symbols: ^JKSE (IHSG), IDR=X (USD/IDR), LQ45 (derived)
 | `chart.result[0].meta.previousClose` | hitung `change24h = (price-prev)/prev*100` |
 | `meta.currency` | `currency` (IDR) |
 
-**Fallback:** Jika Yahoo block (403/timeout), ticker tidak kosong — return dummy:
-```ts
-{ IHSG: 7234.5 ▲0.85%, USD/IDR: 16220 ▲0.12% }
-```
-LQ45 jika tidak ada di Yahoo → derived `~ IHSG * 0.135` agar grid tetap terisi.
+**Fallback:** Jika Yahoo block (403/timeout), coba `query2`. USD/IDR mencoba `exchangerate.host`. Jika tetap gagal, gunakan stale cache maksimal 24 jam. Jika tidak ada stale cache, tampilkan pesan sopan dan jangan tampilkan angka perkiraan. LQ45 jika tidak ada di Yahoo → derived `~ IHSG * 0.135`, wajib diberi label `estimasi`.
 
 ### Interface
 
@@ -119,6 +116,7 @@ interface MarketItem {
   change24h: number | null;
   currency: string;    // IDR | USD
   type: 'idx' | 'forex' | 'crypto';
+  sparkline?: number[]; // close 7 hari, jika tersedia
 }
 interface MarketData {
   items: MarketItem[];
@@ -203,7 +201,7 @@ npm run preview # cek build produksi + safe-area di mobile
 ```
 
 **Edge cases tested:**
-- CoinGecko/Yahoo timeout → `Promise.allSettled` + fallback dummy → ticker tidak kosong
+- CoinGecko/Yahoo timeout → `Promise.allSettled` + fallback stale/empty jujur → tidak ada angka dummy
 - Cache hit → ticker instan tanpa fetch ulang dalam 10 menit
 - `prefers-reduced-motion` → animasi mati
 
@@ -214,7 +212,7 @@ npm run preview # cek build produksi + safe-area di mobile
 | Risiko | Mitigasi |
 |--------|----------|
 | CoinGecko rate limit 429 | Cache 10m + CDN `s-maxage=600` → hit API < 6x/jam/instance |
-| Yahoo 403 block | Fallback dummy IHSG/USDIDR + derived LQ45 |
+| Yahoo 403 block | `query2` → Forex `exchangerate.host` → stale cache max 24j → empty state sopan |
 | Layout double fetch (layout + /market) | Reuse key `market:ticker` — kedua route share cache yang sama |
 | BottomNav tutup konten | `pb-[calc(56px+safe-area)]` di main + spacer div |
 
@@ -222,7 +220,7 @@ npm run preview # cek build produksi + safe-area di mobile
 
 ## 9. Roadmap Market — Phase 0-3 (dari PLAN_MARKET.md)
 
-> Semua Phase tetap **gratis tanpa API key berbayar**. Cache 10m (ticker) / 1 jam (trending/insight), `Promise.allSettled`, fallback dummy.
+> Semua Phase tetap **gratis tanpa API key berbayar**. Cache split (`crypto 2m`, `IDX 15m`, `Forex 10m`), `Promise.allSettled`, fallback stale/empty jujur tanpa dummy.
 
 ### Phase 0 — Done ✅ (2026-01-04)
 
@@ -236,17 +234,19 @@ npm run preview # cek build produksi + safe-area di mobile
 | `/market` tabel saham/crypto + `/tentang` static | `src/routes/market/`, `src/routes/tentang/` | ✅ Done |
 | Build `check 0 error`, `vite build` pass | — | ✅ Done |
 
-### Phase 1 — Quick Win (1-2 hari) ⏳ Planned — Prioritas Tertinggi
+### Phase 1 — Quick Win (1-2 hari) ✅ Done — Prioritas Tertinggi
 
 > Goal: bikin user klik Market → betah, **tanpa tambah API baru** (reuse CoinGecko+Yahoo+berita pool).
 
-#### 1.1 Detail Symbol `/market/[symbol]` + TradingView Chart ⏳
+#### 1.1 Detail Symbol `/market/[symbol]` ⏳
+
+> **Tanpa TradingView** — tidak embed widget chart (diputuskan). Chart di sini pakai **Sparkline 7d** yang sudah ada (`Sparkline.svelte`), cukup tanpa API/embed eksternal.
 
 - Route: `src/routes/market/[symbol]/+page.server.ts` + `+page.svelte`
 - Param: `btc`, `eth`, `ihsg`, `usd-idr` (lowercase dari `MarketItem.symbol`)
 - Server: `find` dari `fetchMarketData()` reuse cache, `404` jika tidak ketemu
-- UI: Header symbol + price + badge 24h + **TradingView Advanced Chart widget** embed (free, tanpa quota) — mapping `BTC→BINANCE:BTCUSDT`, `ETH→BINANCE:ETHUSDT`, `IHSG→IDX:COMPOSITE`, `USD/IDR→FX_IDC:USDIDR`, `loading="lazy"`
-- Acceptance: `/market/btc` & `/market/ihsg` render chart, dark mode ikut theme
+- UI: Header symbol + price + badge 24h + **Sparkline 7d** (reuse `Sparkline.svelte`), tombol balik, `Diperbarui {timeAgo}`
+- Acceptance: `/market/btc` & `/market/ihsg` render detail + sparkline, dark mode ikut theme
 
 #### 1.2 Top Gainer / Loser + Trending Strip ⏳
 
@@ -266,7 +266,7 @@ npm run preview # cek build produksi + safe-area di mobile
 - File: `src/lib/marketTag.ts` pure `tagArticle(article, marketItems)`
 - UI: badge `rounded-full bg-slate-900 text-[10px]` di `NewsItem`/`ArticleView`, klik → `/market/[symbol]`
 
-**Deliverable Phase 1:** 4 fitur, 0 API baru — ⏳ belum dikerjakan
+**Deliverable Phase 1:** 4 fitur, 0 API baru — ✅ selesai (2026-01-05). TradingView tidak dipakai (keputusan) — chart pakai Sparkline 7d yang sudah ada.
 
 ### Phase 2 — Medium (3-5 hari) ⏳ Planned — Retention
 
@@ -291,22 +291,25 @@ npm run preview # cek build produksi + safe-area di mobile
 - Data: Yahoo batch 10 sample dulu (BBCA,BBRI,BMRI,TLKM,ASII,UNVR,GOTO...) `Promise.allSettled`, scale ke 45 nanti
 - UI: `src/lib/components/MarketHeatmap.svelte` grid 5×9 kotak hijau/merah by `change24h`, tooltip `BBCA +1.2%`
 
-#### 2.5 Filter Tab Market ⏳
+#### 2.5 Filter Tab Market ✅
 
 - UI chip `[Semua] [IDX] [Crypto] [Forex]` filter client `items.filter(type)`, `$state<'all'|'idx'|'crypto'|'forex'>`
+- Badge tipe, empty state per filter, sort nama/harga/perubahan 24j dengan panah `↑↓`
 
 **Deliverable Phase 2:** watchlist persist + insight + kurs + heatmap — ⏳ belum dikerjakan
 
 ### Phase 3 — Advanced (1-2 minggu) ⏳ Planned — Power User
 
-#### 3.1 Sparkline 7 Hari ⏳
+#### 3.1 Sparkline 7 Hari ✅
 
-- CoinGecko `sparkline=true` → `sparkline_in_7d.price: number[]`, tambah `sparkline` di `MarketItem`, mini SVG 60×20 downsample 30 titik
+- Yahoo dan CoinGecko `sparkline=true` → `sparkline` 7 titik close/harga, render mini SVG tanpa library di `Sparkline.svelte`
 
 #### 3.2 Economic Calendar ⏳
 
 - **Pilih:** TradingView Economic Calendar widget (free embed, 0 quota) dulu, Finnhub `calendar/economic` nanti jika custom
 - UI: section bawah heatmap 5 event terdekat
+
+**🗑 Dihapus (diputuskan)** — tidak dikerjakan. TradingView embed tidak dipakai di project ini.
 
 #### 3.3 Berita Terkait per Symbol ⏳
 
@@ -337,9 +340,9 @@ Client: watchlist.svelte.ts, portfolio.svelte.ts, alerts.svelte.ts (localStorage
 | Key | TTL | Isi |
 |-----|-----|-----|
 | `market:ticker` | 10m | IHSG/LQ45/USDIDR + 5 crypto (ada) — ✅ |
-| `market:trending` | 1 jam | Trending coins — ⏳ |
+| `market:trending` | 1 jam | Trending coins — ✅ |
 | `market:insight` | 1 jam | FNG + global — ⏳ |
-| `market:sparkline` | 10m | 7d price array — ⏳ |
+| `market:sparkline` | ikut cache market | 7d price array — ✅ melalui `MarketItem.sparkline` |
 
 ### Urutan Eksekusi Rekomendasi
 
@@ -357,7 +360,6 @@ Client: watchlist.svelte.ts, portfolio.svelte.ts, alerts.svelte.ts (localStorage
 - CoinGecko API: `https://api.coingecko.com/api/v3/coins/markets`
 - Yahoo Finance: `https://query1.finance.yahoo.com/v8/finance/chart/^JKSE`
 - Alternative.me FNG: `https://api.alternative.me/fng/`
-- TradingView Widget: `https://s.tradingview.com/widgetembed/`
 - `ARCHITECTURE.md` (root) — pola cache & adapter factory
 - `AGENTS.md` (root) — konteks bisnis+teknis umum
 - `docs/PLAN.md` — registry 11 media & resiliensi
@@ -374,17 +376,17 @@ Client: watchlist.svelte.ts, portfolio.svelte.ts, alerts.svelte.ts (localStorage
 | **0** | BottomNav 3 tab | ✅ Done | `BottomNav.svelte`, `+layout.svelte` |
 | **0** | `/market` tabel | ✅ Done | `market/+page.*` |
 | **0** | `/tentang` static | ✅ Done | `tentang/+page.svelte` |
-| **1.1** | Detail `[symbol]` + TradingView | ⏳ Planned | `market/[symbol]/+page.*` |
-| **1.2** | Gainer/Loser + Trending | ⏳ Planned | `market.ts` `market:trending` |
-| **1.3** | Kalkulator Lot/Converter | ⏳ Planned | `MarketCalculator.svelte` |
-| **1.4** | Auto-tag berita | ⏳ Planned | `marketTag.ts`, `NewsItem` |
+| **1.1** | Detail `[symbol]` + sparkline (tanpa TradingView) | ✅ Done | `market/[symbol]/+page.*` |
+| **1.2** | Gainer/Loser + Trending | ✅ Done | `market.ts` `market:trending` |
+| **1.3** | Kalkulator Lot/Converter | ✅ Done | `MarketCalculator.svelte` |
+| **1.4** | Auto-tag berita | ✅ Done | `marketTag.ts`, `NewsItem` |
 | **2.1** | Watchlist ⭐ | ⏳ Planned | `watchlist.svelte.ts` |
 | **2.2** | Fear & Greed + Dominance | ⏳ Planned | `market:insight` |
 | **2.3** | Kurs lengkap + Emas | ⏳ Planned | `YAHOO_SYMBOLS` |
 | **2.4** | Heatmap LQ45 | ⏳ Planned | `MarketHeatmap.svelte` |
-| **2.5** | Filter tab Market | ⏳ Planned | `/market` chip |
-| **3.1** | Sparkline 7d | ⏳ Planned | `sparkline` |
-| **3.2** | Economic Calendar | ⏳ Planned | TradingView widget |
+| **2.5** | Filter tab Market + sort | ✅ Done | `/market` chip, sort controls |
+| **3.1** | Sparkline 7d | ✅ Done | `Sparkline.svelte`, `sparkline` |
+| **3.2** | Economic Calendar (TradingView widget) | 🗑 Dihapus | — |
 | **3.3** | Berita terkait/symbol | ⏳ Planned | `related: Article[]` |
 | **3.4** | Portfolio paper | ⏳ Planned | `portfolio.svelte.ts` |
 | **3.5** | Alert harga | ⏳ Planned | `alerts.svelte.ts` |

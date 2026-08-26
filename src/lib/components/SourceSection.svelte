@@ -2,7 +2,7 @@
 	import type { SourceResult } from '$lib/types';
 	import NewsItem from './NewsItem.svelte';
 
-	let { result }: { result: SourceResult } = $props();
+	let { result, marketPool = [] as { symbol: string }[] }: { result: SourceResult; marketPool?: { symbol: string }[] } = $props();
 
 	// svelte-ignore state_referenced_locally
 	let local: SourceResult = $state(result);
@@ -41,7 +41,7 @@
 	{#if local.ok && local.articles.length > 0}
 		<div class="divide-y divide-gray-100 dark:divide-neutral-800">
 			{#each local.articles as article, i (article.url)}
-				<NewsItem {article} index={i} />
+				<NewsItem {article} index={i} {marketPool} />
 			{/each}
 		</div>
 	{:else}
