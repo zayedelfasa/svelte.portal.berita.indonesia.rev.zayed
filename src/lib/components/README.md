@@ -13,6 +13,8 @@ Komponen presentational. Data selalu masuk lewat props (dari load function), tid
 | `SkeletonSection.svelte` | — | home, /media | Placeholder animate-pulse saat `navigating` |
 | `ArticleView.svelte` | `article: Article`, `sourceName: string` | `/baca` | Detail: gambar aspect-video, judul, summary, tombol Baca sumber ↗ / Bagikan / Simpan |
 | `Ticker.svelte` | `articles: Article[]` | home | Marquee 8 headline terbaru, pause on hover, hormati reduced-motion |
+| `MarketTicker.svelte` | `data: MarketData \| null` | `+layout.svelte` (global) | **Market ticker** IHSG/LQ45/USD·IDR+BTC/ETH/SOL/BNB/USDT, marquee 80s `bg-slate-900`, `▲/▼` hijau/merah, duplikasi `[...items,...items]` untuk loop seamless |
+| `BottomNav.svelte` | — (baca `page.url.pathname`) | `+layout.svelte` (global) | **Bottom navigation** 3 tab fixed `max-w-[420px]` — Berita `/`+`/baca`/cari/media/simpan, Market `/market`, Tentang `/tentang`; `safe-area-inset-bottom`, active `text-red-500` |
 | `Toast.svelte` | `message: string`, `show: boolean` | ArticleView | Notifikasi kecil fixed bottom |
 
 ## Konvensi

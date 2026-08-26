@@ -3,7 +3,7 @@ import { isCategoryId } from '$lib/categories';
 import type { SourceResult } from '$lib/types';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url, setHeaders }) => {
+export const load: PageServerLoad = async ({ url }) => {
 	const raw = url.searchParams.get('kategori');
 	const kategori = isCategoryId(raw) ? raw : null;
 	const fetchedAt = new Date().toISOString();
@@ -39,6 +39,5 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 		};
 	});
 
-	setHeaders({ 'cache-control': 'public, s-maxage=600, stale-while-revalidate=1800' });
 	return { results, fetchedAt, kategori, unsupported };
 };

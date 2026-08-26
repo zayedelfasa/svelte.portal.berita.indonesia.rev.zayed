@@ -4,7 +4,7 @@
 
 ## Ringkasan
 
-Portal agregator berita 11 media lokal Indonesia. SvelteKit 2 (Svelte 5 runes) + Tailwind CSS v4, deploy target Vercel.
+Portal agregator berita 11 media lokal Indonesia + Market Saham & Crypto. SvelteKit 2 (Svelte 5 runes) + Tailwind CSS v4, deploy target Vercel. Navigasi 3 tab BottomNav, MarketTicker global.
 
 ```
 Browser
@@ -12,24 +12,27 @@ Browser
    ▼
 Vercel CDN (s-maxage=600)
    │
-SvelteKit server (+page.server.ts / +server.ts)
+SvelteKit server (+layout.server.ts + +page.server.ts / +server.ts)
    │  Promise.allSettled paralel
-   ▼
-lib/server/sources/*  ──►  lib/server/cache.ts (memori, TTL 10 menit)
-   │                            ▲
-   ├─ RSS resmi ────────────────┤
-   └─ aggregator berita-indo-api┘
+   ├── lib/server/sources/*  ──►  lib/server/cache.ts (memori, TTL 10 menit)
+   │       ├─ RSS resmi ────────────────┤
+   │       └─ aggregator berita-indo-api┘
+   │                                    │
+   │       Upstream media (detik.com, cnnindonesia.com, ...)
    │
-Upstream media (detik.com, cnnindonesia.com, antaranews.com, ...)
+   └── lib/server/market.ts ──► cached('market:ticker')
+           ├─ CoinGecko API (BTC/ETH/SOL/BNB/USDT)
+           └─ Yahoo Finance (^JKSE IHSG, LQ45, IDR=X)
 ```
 
 ## Alur Data
 
-1. Browser meminta `/` → `routes/+page.server.ts`
-2. Load function memanggil `fetchTop(3)` untuk tiap media **secara paralel** (`Promise.allSettled`) — satu sumber gagal tidak menjatuhkan halaman
+1. Browser meminta `/` → `routes/+layout.server.ts` load **MarketData** (`fetchMarketData()` → CoinGecko+Yahoo, `cached('market:ticker')`) + `routes/+page.server.ts` load berita
+2. Load berita memanggil `fetchTop(3)` untuk tiap media **secara paralel** (`Promise.allSettled`) — satu sumber gagal tidak menjatuhkan halaman
 3. Adapter (`lib/server/sources/*`) mengecek cache memori; kalau hangus → fetch upstream → normalisasi ke `Article`
 4. Hasil ternormalisasi dikirim ke `+page.svelte` sebagai props — browser tidak pernah menyentuh upstream langsung (bebas CORS)
-5. Response di-cache CDN via header `Cache-Control: s-maxage=600`
+5. Layout render `<MarketTicker data={market}>` di bawah Header (marquee `bg-slate-900`) + `<BottomNav>` fixed 3 tab
+6. Response di-cache CDN via header `Cache-Control: s-maxage=600` (berita & market sama)
 
 ## Pola Kunci
 
@@ -56,7 +59,8 @@ interface Article {
 |---|---|
 | `rss:{id}` / `agg:{id}` | pool headline |
 | `rss:{id}:{cat}` / `agg:{id}:{cat}` | pool kategori |
-Kategori yang URL/path-nya sama dengan headline otomatis reuse key headline (dedup).
+| `market:ticker` | MarketData (IHSG/LQ45/USDIDR + crypto top 5) |
+Kategori yang URL/path-nya sama dengan headline otomatis reuse key headline (dedup). Market reuse key yang sama untuk `+layout.server.ts` & `/market`.
 
 ### Multi-pool lookup di `/baca`
 Artikel bisa datang dari pool kategori yang tidak ada di pool headline. Detail page mencari: match `u=` (URL asli) dulu → fallback `id=` → lalu telusuri seluruh pool kategori sumber tersebut.
@@ -73,11 +77,10 @@ Artikel bisa datang dari pool kategori yang tidak ada di pool headline. Detail p
 | `src/routes/` | File-based routing | [README](src/routes/README.md) |
 | `static/` | Aset publik + icon PWA | [README](static/README.md) |
 
-File loose di `src/lib/`: `types.ts` (interface inti), `time.ts` (`timeAgo`, `isNew`), `categories.ts` (6 kategori kanonik).
+File loose di `src/lib/`: `types.ts` (interface inti + `MarketItem`/`MarketData` di `server/market.ts`), `time.ts` (`timeAgo`, `isNew`), `categories.ts` (6 kategori kanonik).
 
 ## Riwayat Pengembangan
-- `PLAN.md` — plan awal + riset endpoint
-- `PLAN_TIER_1.md` — badge BARU, pencarian, tab kategori
-- `PLAN_TIER_2.md` — skeleton, retry, share, OG meta, filter sumber, dark mode
-- `PLAN_TIER_3.md` — bookmark, thumbnail, ticker, PWA
-- `PLAN_BUGFIX_TIER{1,2,3}.md` — perbaikan pasca-review tiap tier
+- `docs/PLAN.md` — plan awal + riset endpoint
+- `docs/DOC_FITUR_MARKET_TENTANG.md` — Market ticker + BottomNav + /market + /tentang + roadmap Phase 0-3
+- `docs/PLAN_CUACA.md` — Tab Cuaca & Polusi (Open-Meteo, 4 tab)
+- `docs/PLAN_FITUR_HARIAN.md` — Fitur daily habit (Sholat, Briefing, Gempa...)

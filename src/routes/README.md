@@ -7,6 +7,8 @@ Konvensi: tiap folder = 1 route/halaman. File `+page.server.ts` = load data serv
 | Folder | URL | File kunci | Fungsi |
 |---|---|---|---|
 | `routes/` | `/` | `+page.server.ts` | Home: `Promise.allSettled` fetchTop(3) per media; filter `?kategori=` + `unsupported` count |
+| `routes/market/` | `/market` | `+page.server.ts` + `+page.svelte` | **Market**: tabel Saham/Forex (IHSG/LQ45/USD·IDR) + Crypto Top 5 (BTC/ETH/SOL/BNB/USDT), `MarketData` dari `fetchMarketData()` (reuse `market:ticker` cache), badge 24h hijau/merah |
+| `routes/tentang/` | `/tentang` | `+page.svelte` (static) | **Tentang Aplikasi**: 5 card — Apa ini / 3 Fitur / Teknologi / Sumber Data / Versi; tanpa load function |
 | `routes/media/[source]/` | `/media/:source` | `+page.server.ts` | List 50 artikel 1 media + load-more client (`visible` +10) |
 | `routes/baca/` | `/baca?source=&u=&id=` | `+page.server.ts` | Detail: `u` primary match → `id` fallback → telusuri pool kategori (anti-404); kirim `more` 3 artikel |
 | `routes/cari/` | `/cari?q=` | `+page.server.ts` | Filter pool cache 100/media (case-insensitive title+summary), max 50, s-maxage=120 |
@@ -15,7 +17,8 @@ Konvensi: tiap folder = 1 route/halaman. File `+page.server.ts` = load data serv
 
 ## Layout
 
-`+layout.svelte` — wrapper `max-w-[420px]` putih di atas backdrop abu; sticky Header; clock ticker `setInterval(30s)`; render `<Footer/>`.
+`+layout.svelte` — wrapper `max-w-[420px]` putih di atas backdrop abu; sticky Header; **MarketTicker** global di bawah Header (`data.market` dari `+layout.server.ts`); `main` dengan `pb-[calc(56px+safe-area)]`; render `<Footer/>` + `<BottomNav>` fixed 3 tab.
+`+layout.server.ts` — load `market: MarketData \| null` via `fetchMarketData()` (try/catch, tidak jatuhkan layout), header `s-maxage=600`.
 
 ## Konvensi
 
