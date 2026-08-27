@@ -230,6 +230,16 @@ Branch kerja: `dev` — 7 issues (#1-#7) → #1-#6 closed, #7 verifikasi
 - Geolocation allow/deny, dark mode, BottomNav active `Cuaca` OK
 - Footer hide di `/cuaca`, muncul di `/`
 
+## 2026-08-27 — Polish Layout: Hide Footer & Ticker di Cuaca/Tentang
+
+Branch kerja: `dev`
+
+- `src/routes/+layout.svelte` — tambah `isTentang = pathname.startsWith('/tentang') || '/about'` (cover `/about` alias)
+- Footer `Berita dikumpulkan` hide di `/tentang` juga (sebelumnya hanya `/cuaca`) → `{#if !isCuaca && !isTentang}<Footer />{/if}`
+- MarketTicker crypto hide di `/cuaca` & `/tentang`/`/about` → `{#if data?.market && !isCuaca && !isTentang}` (bersih, fokus cuaca/tentang)
+- Update docs: `README.md`, `ARCHITECTURE.md`, `src/routes/README.md` sinkron kondisi baru
+- Validasi: `npm run check` 0 error, 0 warning
+
 ## Pekerjaan yang Belum Dikerjakan
 
 ### Market — TUNDA

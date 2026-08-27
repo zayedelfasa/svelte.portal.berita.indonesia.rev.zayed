@@ -37,7 +37,7 @@ SvelteKit server (+layout.server.ts + +page.server.ts / +server.ts)
 2. `/cuaca?lat=&lon=&name=` → `+page.server.ts` `Promise.allSettled([fetchWeather, fetchAirQuality, reverseGeocode])` → props `{weather, airQuality, cityName}`; fallback Jakarta -6.2088,106.8456; `localStorage 'cuaca:loc'` persist + `BottomNav` href dinamis, auto-restore
 3. `/cuaca/cari?q=` → `searchCity(q)` 5 hasil → pick → `goto('/cuaca?lat=&lon=&name=')` + save loc; debounce 300ms
 4. Adapter `lib/server/sources/*` cek `cached` → `fetchWithTimeout(7-8s)` → normalisasi `Article`
-5. Layout render `<MarketTicker {#if data?.market}>` + `<BottomNav Berita|Cuaca|Tentang>` + `Footer` hide di `/cuaca`
+5. Layout render `<MarketTicker {#if data?.market && !isCuaca && !isTentang}>` (hide di `/cuaca` & `/tentang`/`/about`) + `<BottomNav Berita|Cuaca|Tentang>` + `Footer` hide di `/cuaca` & `/tentang`
 6. CDN `s-maxage=600` (layout set header, cuaca reuse tanpa double)
 
 ## Pola Kunci

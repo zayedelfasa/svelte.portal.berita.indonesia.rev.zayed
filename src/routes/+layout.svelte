@@ -11,6 +11,7 @@
 	let { children, data } = $props();
 
 	const isCuaca = $derived(page.url.pathname.startsWith('/cuaca'));
+	const isTentang = $derived(page.url.pathname.startsWith('/tentang') || page.url.pathname.startsWith('/about'));
 
 	$effect(() => {
 		const t = setInterval(() => {
@@ -30,9 +31,9 @@
 <div class="flex min-h-screen justify-center bg-[#f3f4f6] dark:bg-neutral-950">
 	<div class="flex min-h-screen w-full max-w-[420px] flex-col bg-white shadow-sm dark:bg-neutral-900">
 		<Header />
-		{#if data?.market}<MarketTicker data={data.market} />{/if}
+		{#if data?.market && !isCuaca && !isTentang}<MarketTicker data={data.market} />{/if}
 		<main class="flex-1 pb-[calc(56px+env(safe-area-inset-bottom))]">{@render children()}</main>
-		{#if !isCuaca}<Footer />{/if}
+		{#if !isCuaca && !isTentang}<Footer />{/if}
 		<BottomNav />
 	</div>
 </div>

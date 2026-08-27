@@ -20,7 +20,7 @@ Konvensi: tiap folder = 1 route/halaman. File `+page.server.ts` = load data serv
 
 ## Layout
 
-`+layout.svelte` — wrapper `max-w-[420px]` putih di backdrop abu; sticky `Header`; **MarketTicker** conditional `{#if data?.market}` di bawah Header; `main pb-[calc(56px+safe-area)]`; `Footer` hide di `/cuaca` (`isCuaca` dari `page.url.pathname`); `BottomNav` fixed 3 tab (`Berita|Cuaca|Tentang`, `cuacaHref` dinamis dari `localStorage`).
+`+layout.svelte` — wrapper `max-w-[420px]` putih di backdrop abu; sticky `Header`; **MarketTicker** conditional `{#if data?.market && !isCuaca && !isTentang}` hide di `/cuaca` & `/tentang`/`/about`; `main pb-[calc(56px+safe-area)]`; `Footer` hide di `/cuaca` & `/tentang` (`isCuaca`/`isTentang` dari `page.url.pathname`); `BottomNav` fixed 3 tab (`Berita|Cuaca|Tentang`, `cuacaHref` dinamis dari `localStorage`).
 `+layout.server.ts` — load `market: MarketData | null` via `fetchMarketData()` (try/catch), header `s-maxage=600` (cuaca reuse tanpa set ulang).
 
 ## Konvensi

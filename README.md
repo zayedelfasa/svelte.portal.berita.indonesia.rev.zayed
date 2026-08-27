@@ -42,8 +42,8 @@ npm run check        # svelte-check 0 error
 - Semua fetch upstream dilakukan **server-side** (`src/lib/server`) → bebas masalah CORS.
 - Cache memori TTL 10 menit per sumber + split `market:crypto 2m, idx 15m, forex 10m, weather 10m, geo 1j, reverse 1d` + header `s-maxage=600` untuk CDN Vercel.
 - Satu sumber gagal ≠ halaman gagal (`Promise.allSettled`, section menampilkan pesan kecil; market gagal → empty jujur, cuaca gagal → card `Tidak tersedia`, layout tidak crash).
-- `+layout.server.ts` load **MarketTicker** global conditional (`{#if data?.market}`) — tampil di bawah Header jika ada data.
-- BottomNav fixed 3 tab (`/`, `/cuaca`, `/tentang`) — `safe-area-inset-bottom` aware, `cuacaHref` dinamis via `localStorage 'cuaca:loc'` → persist lokasi terakhir, Footer hide di `/cuaca`.
+- `+layout.server.ts` load **MarketTicker** global conditional (`{#if data?.market && !isCuaca && !isTentang}`) — tampil di bawah Header hanya di `/` (hide di `/cuaca` & `/tentang` biar bersih).
+- BottomNav fixed 3 tab (`/`, `/cuaca`, `/tentang`) — `safe-area-inset-bottom` aware, `cuacaHref` dinamis via `localStorage 'cuaca:loc'` → persist lokasi terakhir, Footer `Berita dikumpulkan` hide di `/cuaca` & `/tentang`.
 - Halaman `/cuaca` → `?lat=&lon=&name=` default Jakarta, geolocation + search kota `/cuaca/cari`; `/market` hidden; `/baca?source=X&id=Y&u=...` detail; `/tentang` static — lihat [`src/routes/README.md`](src/routes/README.md).
 
 Detail lengkap: lihat [`docs/PLAN.md`](docs/PLAN.md). Docs lain: [`docs/PLAN_CUACA.md`](docs/PLAN_CUACA.md) (Cuaca+Polusi, Done C1/C2) · [`docs/PLAN_FITUR_HARIAN.md`](docs/PLAN_FITUR_HARIAN.md) (daily habit) · [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
