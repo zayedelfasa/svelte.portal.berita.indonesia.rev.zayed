@@ -250,11 +250,23 @@ Branch kerja: `dev`
 - Update `README.md` sumber cuaca tambah BigDataCloud
 - Validasi: `npm run check` 0 error, `npm run build` pass
 
+## 2026-08-27 — PLAN Market TradingView (NEXT PLAN)
+
+Status: **NEXT** — Yahoo HAPUS total (403 kurang bagus)
+
+- Buat `docs/PLAN_MARKET_TRADINGVIEW.md` — plan TradingView embed READ ONLY, gratis tanpa API key
+- Sumber baru: TradingView widget (Ticker Tape + Market Overview + Mini Chart), bukan Yahoo/TwelveData/exchangerate.host
+- Isi awal: IHSG (`IDX:COMPOSITE`), USD/IDR (`FX_IDC:USDIDR`), BTC/ETH/SOL (`BINANCE:*`) + tombol **Lihat lainnya →** ke `/market`
+- Yahoo hapus total: `market.ts` fungsi `fetchTwelveItem`/`fetchIdxForex`/`YAHOO_SYMBOLS`/`query1/2` dihapus
+- BottomNav balik 4 tab `Berita | Cuaca | Market | Tentang` (Market ON lagi)
+- `+layout.svelte` ganti `MarketTicker` → `TradingViewTicker`, `+layout.server.ts` hapus `fetchMarketData()`
+- Validasi next: `npm run check` 0 error + `build` pass + cek dark mode & lazy load
+
 ## Pekerjaan yang Belum Dikerjakan
 
-### Market — TUNDA
+### Market — NEXT PLAN (TradingView)
 
-- Fallback layer 3 untuk IDX selain Yahoo Finance.
+- EXECUTE `PLAN_MARKET_TRADINGVIEW.md` (3 component TradingView + BottomNav 4 tab + /market widget)
 - Watchlist.
 - Fear & Greed, dominance, dan market cap.
 - Kurs lengkap dan data emas.
