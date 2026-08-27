@@ -11,7 +11,7 @@ Konvensi: tiap folder = 1 route/halaman. File `+page.server.ts` = load data serv
 | `routes/cuaca/cari/` | `/cuaca/cari?q=` | `+page.server.ts` + `+page.svelte` | **Cari Kota**: `?q=` debounce 300ms → `searchCity` 5 hasil, kartu Kota Populer, pick → `/cuaca?lat=&lon=&name=` + save `cuaca:loc` |
 | `routes/market/` | `/market` | `+page.server.ts` + `+page.svelte` | **Market (HIDDEN dari BottomNav)**: tabel Saham/Forex + Crypto Top 5, reuse `market:ticker`, badge 24h, sparkline, filter/sort |
 | `routes/market/[symbol]/` | `/market/:symbol` | `+page.server.ts` + `+page.svelte` | Detail symbol + sparkline |
-| `routes/tentang/` | `/tentang` | `+page.svelte` static | 5 card — Apa ini / 3 Fitur / Teknologi / Sumber Data / Versi |
+| `routes/tentang/` | `/tentang` | `+page.svelte` static | 4 card — Apa ini / Fitur Utama (Berita+Cuaca) / Sumber Data / Versi — tanpa Teknologi |
 | `routes/media/[source]/` | `/media/:source` | `+page.server.ts` | List 50 artikel 1 media + load-more +10 |
 | `routes/baca/` | `/baca?source=&u=&id=` | `+page.server.ts` | Detail: `u` primary → `id` fallback → pool kategori; `more` 3 artikel |
 | `routes/cari/` | `/cari?q=` | `+page.server.ts` | Search pool 100/media, max 50, `s-maxage=120` |
