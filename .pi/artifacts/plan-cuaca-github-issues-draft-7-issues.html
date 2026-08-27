@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="artifact-kind" content="markdown">
+<meta name="artifact-generated" content="1787799694336">
+<meta name="artifact-project" content="/Volumes/samsung_apfs/svelte.portal.berita.indonesia">
+<title>PLAN CUACA — GitHub Issues Draft (7 Issues)</title>
+<style data-base>:root { color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1c1c1a;
+  --muted: #6b6862;
+  --border: #e7e5e0;
+  --code-bg: #f7f6f4;
+  --accent: #b95730;
+  --add-bg: #e9f7ee;
+  --add-word-bg: #c8ecd3;
+  --add-fg: #1a7f37;
+  --del-bg: #feeff1;
+  --del-word-bg: #f8d2d7;
+  --del-fg: #c93c4c;
+  --hl-comment: #6e7781;
+  --hl-keyword: #cf222e;
+  --hl-string: #0a3069;
+  --hl-number: #0550ae;
+  --hl-title: #8250df;
+  --hl-type: #953800;
+  --hl-attr: #0550ae;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #171614;
+  --fg: #e6e3de;
+  --muted: #94918a;
+  --border: #2e2d29;
+  --code-bg: #201f1c;
+  --accent: #d67858;
+  --add-bg: #1d2a20;
+  --add-word-bg: #2b4232;
+  --add-fg: #85c793;
+  --del-bg: #2e1c1e;
+  --del-word-bg: #4a292c;
+  --del-fg: #e28a91;
+  --hl-comment: #8b949e;
+  --hl-keyword: #ff7b72;
+  --hl-string: #a5d6ff;
+  --hl-number: #79c0ff;
+  --hl-title: #d2a8ff;
+  --hl-type: #ffa657;
+  --hl-attr: #79c0ff;
+} }
+
+* { box-sizing: border-box; }
+html { font-size: 15px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+article { max-width: 860px; margin: 0 auto; padding: 2.75rem 1.5rem 4rem; }
+h1, h2, h3, h4 { line-height: 1.3; letter-spacing: -0.01em; color: var(--fg); }
+h1 { font-size: 1.45rem; font-weight: 650; margin: 0 0 1rem; }
+h2 { font-size: 1.15rem; font-weight: 650; margin: 2.2em 0 .7em; padding-bottom: .35em; border-bottom: 1px solid var(--border); }
+h3 { font-size: 1rem; font-weight: 600; margin: 1.8em 0 .5em; }
+h4 { font-size: .9rem; font-weight: 600; margin: 1.5em 0 .4em; }
+p { margin: .8em 0; }
+a { color: var(--accent); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 2px; }
+a:hover { text-decoration-color: var(--accent); }
+strong { font-weight: 600; }
+ul, ol { margin: .8em 0; padding-left: 1.5em; }
+li { margin: .3em 0; }
+li > ul, li > ol { margin: .2em 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+img, svg, video { max-width: 100%; }
+::selection { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+
+blockquote {
+  margin: 1.2em 0;
+  padding: .1em 1.1em;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--muted);
+}
+blockquote > :first-child { margin-top: .4em; }
+blockquote > :last-child { margin-bottom: .4em; }
+
+table { border-collapse: collapse; width: 100%; margin: 1.2em 0; font-size: .9rem; }
+th {
+  text-align: left; font-weight: 600; font-size: .74rem;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  padding: .5em .75em; border-bottom: 1px solid var(--border);
+}
+td { padding: .55em .75em; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+
+code, kbd, samp { font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace; }
+code { font-size: .85em; background: var(--code-bg); padding: .15em .4em; border-radius: 4px; }
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  overflow-x: auto;
+  font-size: .82rem;
+  line-height: 1.55;
+  margin: 1.2em 0;
+}
+pre code { background: transparent; padding: 0; font-size: inherit; }
+
+input[type="checkbox"] { accent-color: var(--accent); margin-right: .4em; }
+
+
+.artifact-header {
+  display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap;
+  margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+}
+.artifact-header h1 { margin: 0; }
+.artifact-badge {
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace; font-size: .66rem; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px; padding: .2em .7em; white-space: nowrap;
+}
+.artifact-meta { margin-left: auto; color: var(--muted); font-size: .72rem; font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace; }
+.artifact-footer {
+  margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: .72rem; font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+}
+.artifact-mermaid { text-align: center; margin: 1.5rem 0; }
+</style>
+<style data-hljs>
+.hljs { color: var(--fg); background: transparent; }
+.hljs-comment, .hljs-quote { color: var(--hl-comment); font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-deletion { color: var(--hl-keyword); }
+.hljs-string, .hljs-regexp, .hljs-addition { color: var(--hl-string); }
+.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-meta, .hljs-link { color: var(--hl-number); }
+.hljs-title, .hljs-section, .hljs-function .hljs-title { color: var(--hl-title); }
+.hljs-type, .hljs-class .hljs-title, .hljs-built_in { color: var(--hl-type); }
+.hljs-variable, .hljs-template-variable, .hljs-attr, .hljs-attribute, .hljs-property { color: var(--hl-attr); }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 600; }
+</style>
+</head>
+<body>
+<article>
+<header class="artifact-header">
+<h1>PLAN CUACA — GitHub Issues Draft (7 Issues)</h1>
+<span class="artifact-badge">markdown</span>
+<span class="artifact-meta">2026-08-27 03:01:34</span>
+</header>
+<h1>PLAN CUACA — Draft 7 GitHub Issues</h1>
+<blockquote>
+<p>Repo: <code>zayedelfasa/svelte.portal.berita.indonesia</code> | Branch: <code>dev</code> | Milestone: <code>Cuaca Phase C1/C2</code>
+<code>gh</code> CLI tidak tersedia di env ini (read-only wrapper butuh <code>gh</code> binary) → draft di bawah siap copy-paste ke GitHub <code>New Issue</code>. Semua issue sudah pakai template checklist + acceptance + referensi file.</p>
+</blockquote>
+<hr>
+<h2>Cara Pakai</h2>
+<ol>
+<li>Buka <code>https://github.com/zayedelfasa/svelte.portal.berita.indonesia/issues/new</code></li>
+<li>Copy Title + Body per issue di bawah</li>
+<li>Labels: <code>enhancement</code> + <code>cuaca</code> + <code>phase:c1</code> / <code>phase:c2</code></li>
+<li>Assignee: kamu, Milestone: <code>Cuaca</code></li>
+</ol>
+<hr>
+<h3>Issue #1 — <code>[CUACA][C1-1] Setup types + WMO mapping + weather service contract</code></h3>
+<p><strong>Title:</strong> <code>[CUACA][C1-1] Setup types + WMO mapping + weather service contract</code></p>
+<p><strong>Labels:</strong> <code>enhancement</code>, <code>cuaca</code>, <code>phase:c1</code>, <code>area:server</code></p>
+<p><strong>Body:</strong></p>
+<pre><code class="hljs language-md"><span class="hljs-section">## Tujuan</span>
+Kontrak data cuaca siap sebelum fetch. Unblock semua task C1.
+
+<span class="hljs-section">## Scope</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/lib/weatherCode.ts`</span> baru — mapping WMO 0-99 -&gt; {label, icon} ID
+<span class="hljs-bullet">  -</span> 0 Cerah, 1 Cerah Berawan, 2 Berawan, 3 Mendung, 45 Kabut, 51 Gerimis ... 95 Petir
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/lib/types.ts`</span> tambah <span class="hljs-code">`WeatherData`</span>, <span class="hljs-code">`AirQualityData`</span>, <span class="hljs-code">`GeoCity`</span>
+<span class="hljs-code">```ts
+interface WeatherData { current: {temp, feelsLike, humidity, wind, code}, daily: {max,min,code,precip}[], hourly: {time,temp,code}[] }
+interface AirQualityData { us_aqi: number, pm2_5: number, pm10: number, category: string }</span></code></pre><ul>
+<li><input disabled="" type="checkbox"> Buat <code>src/lib/server/weather.ts</code> skeleton (4 fn kosong + TODO, belum fetch)</li>
+</ul>
+<h2>Acceptance</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <code>npm run check</code> 0 error</li>
+<li><input disabled="" type="checkbox"> <code>weatherCode.ts</code> di-import tanpa error di Svelte</li>
+</ul>
+<h2>Referensi</h2>
+<p><code>docs/PLAN_CUACA.md</code> §2, §6 — <code>docs/AGENTS.md</code> §7 (Open-Meteo endpoints)</p>
+<pre><code>
+---
+
+### Issue #2 — `[CUACA][C1-2] Backend `weather.ts` — 4 fetch + cache`
+
+**Title:** `[CUACA][C1-2] Backend weather.ts — fetchWeather / fetchAirQuality / searchCity / reverseGeocode + cache`
+
+**Labels:** `enhancement`, `cuaca`, `phase:c1`, `area:server`
+
+**Body:**
+```md
+## Tujuan
+Server bisa ambil cuaca + polusi + geocoding dari Open-Meteo (gratis unlimited).
+
+## Task
+- [ ] `src/lib/server/weather.ts` implement 4 fungsi:
+  - `fetchWeather(lat,lon)` -&gt; `api.open-meteo.com/v1/forecast?latitude={lat}&amp;longitude={lon}&amp;current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&amp;daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum&amp;hourly=temperature_2m,weather_code&amp;timezone=Asia/Jakarta&amp;forecast_days=7`
+  - `fetchAirQuality(lat,lon)` -&gt; `air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&amp;longitude={lon}&amp;current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide&amp;timezone=Asia/Jakarta`
+  - `searchCity(q)` -&gt; `geocoding-api.open-meteo.com/v1/search?name={q}&amp;count=5&amp;language=id&amp;format=json`
+  - `reverseGeocode(lat,lon)` -&gt; `geocoding-api.open-meteo.com/v1/reverse?latitude={lat}&amp;longitude={lon}&amp;language=id`
+- [ ] Semua pakai `fetchWithTimeout(7000)` + `cached(key, fn)` + `AbortController`
+- [ ] Cache keys:
+  - `weather:current:{lat,lon}` TTL 10m
+  - `weather:air:{lat,lon}` TTL 10m
+  - `weather:geo:{q}` TTL 1 jam
+  - `weather:reverse:{lat,lon}` TTL 1 hari
+- [ ] Tambah `TTL` baru di `src/lib/server/cache.ts` jika perlu
+- [ ] JANGAN import dari client (`$lib/server/*` hanya di `+page.server.ts`)
+
+## Acceptance
+- [ ] `npm run check` 0 error
+- [ ] Hit manual `fetchWeather(-6.2,106.8)` balikin `current.temperature_2m` number
+- [ ] Cache hit kedua tidak hit network (cek log)
+
+## Referensi
+`docs/PLAN_CUACA.md` §2-§3 — pola reuse `market.ts` (`Promise.allSettled`, `s-maxage=600`)</code></pre><hr>
+<h3>Issue #3 — <code>[CUACA][C1-3] Halaman server </code>/cuaca<code> — fallback Jakarta + parallel fetch</code></h3>
+<p><strong>Title:</strong> <code>[CUACA][C1-3] Halaman server /cuaca — fallback Jakarta + parallel fetch</code></p>
+<p><strong>Labels:</strong> <code>enhancement</code>, <code>cuaca</code>, <code>phase:c1</code>, <code>area:routes</code></p>
+<p><strong>Body:</strong></p>
+<pre><code class="hljs language-md"><span class="hljs-section">## Tujuan</span>
+<span class="hljs-code">`/cuaca`</span> bisa dibuka tanpa param (default Jakarta) dan dengan <span class="hljs-code">`?lat=&amp;lon=`</span>.
+
+<span class="hljs-section">## Task</span>
+<span class="hljs-bullet">-</span> [ ] Buat <span class="hljs-code">`src/routes/cuaca/+page.server.ts`</span>
+<span class="hljs-bullet">  -</span> Baca <span class="hljs-code">`url.searchParams.get(&#x27;lat&#x27;|&#x27;lon&#x27;|&#x27;name&#x27;)`</span>
+<span class="hljs-bullet">  -</span> Default jika kosong: <span class="hljs-code">`lat=-6.2088 lon=106.8456 name=Jakarta`</span>
+<span class="hljs-bullet">  -</span> Validasi lat/lon number, fallback Jakarta jika NaN
+<span class="hljs-bullet">  -</span> <span class="hljs-code">`Promise.allSettled([fetchWeather, fetchAirQuality, reverseGeocode])`</span>
+<span class="hljs-bullet">  -</span> Return <span class="hljs-code">`{ weather, airQuality, cityName, fetchedAt, lat, lon }`</span>
+<span class="hljs-bullet">  -</span> Set header <span class="hljs-code">`cache-control: public, s-maxage=600, stale-while-revalidate=1800`</span>
+<span class="hljs-bullet">  -</span> Jika 1 gagal -&gt; field jadi <span class="hljs-code">`null`</span>, halaman tetap 200 (card <span class="hljs-code">`Tidak tersedia`</span>)
+<span class="hljs-bullet">-</span> [ ] Buat <span class="hljs-code">`src/routes/cuaca/+page.svelte`</span> skeleton (tampilkan JSON dulu, UI menyusul)
+
+<span class="hljs-section">## Acceptance</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`/cuaca`</span> -&gt; tampil Jakarta
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`/cuaca?lat=-7.2575&amp;lon=112.7521&amp;name=Surabaya`</span> -&gt; tampil Surabaya
+<span class="hljs-bullet">-</span> [ ] Matikan salah satu API (mock throw) -&gt; halaman tetap 200, card lain tetap muncul
+
+<span class="hljs-section">## Referensi</span>
+<span class="hljs-code">`docs/PLAN_CUACA.md`</span> §3-§4</code></pre><hr>
+<h3>Issue #4 — <code>[CUACA][C1-4] UI WeatherCard + AirQualityCard + BottomNav + Geolocation</code></h3>
+<p><strong>Title:</strong> <code>[CUACA][C1-4] UI WeatherCard + AirQualityCard + BottomNav Cuaca + Geolocation</code></p>
+<p><strong>Labels:</strong> <code>enhancement</code>, <code>cuaca</code>, <code>phase:c1</code>, <code>area:ui</code></p>
+<p><strong>Body:</strong></p>
+<pre><code class="hljs language-md"><span class="hljs-section">## Tujuan</span>
+User lihat suhu + polusi dengan cantik di HP 420px, bisa pakai GPS.
+
+<span class="hljs-section">## Task</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/lib/components/WeatherCard.svelte`</span> baru
+<span class="hljs-bullet">  -</span> Props: <span class="hljs-code">`weather, cityName, fetchedAt`</span>
+<span class="hljs-bullet">  -</span> UI: gradient sky/blue, <span class="hljs-code">`31°C Cerah Berawan • Feels like 34°C`</span>, <span class="hljs-code">`H 33° L 26° • Humidity 78% • Wind 12 km/h`</span>, <span class="hljs-code">`Diperbarui {timeAgo}`</span>
+<span class="hljs-bullet">  -</span> <span class="hljs-code">`dark:bg-neutral-900`</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/lib/components/AirQualityCard.svelte`</span> baru
+<span class="hljs-bullet">  -</span> Props: <span class="hljs-code">`air`</span>
+<span class="hljs-bullet">  -</span> UI: <span class="hljs-code">`AQI 85 Sedang (kuning) • PM2.5 18 µg/m³ • PM10 32`</span>, progress bar 0-300 dengan warna AQI
+<span class="hljs-bullet">  -</span> Kategori: <span class="hljs-code">`0-50 Baik hijau, 51-100 Sedang kuning, 101-150 Tidak Sehat oranye, 151-200 Sangat Tidak Sehat merah, 201-300 Berbahaya ungu`</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/routes/cuaca/+page.svelte`</span> final
+<span class="hljs-bullet">  -</span> Render 2 card + header <span class="hljs-code">`Cuaca • Diperbarui ...`</span>
+<span class="hljs-bullet">  -</span> Tombol <span class="hljs-code">`[📍 Gunakan Lokasi Saya]`</span> -&gt; <span class="hljs-code">`navigator.geolocation.getCurrentPosition`</span> -&gt; <span class="hljs-code">`goto(&#x27;/cuaca?lat=&amp;lon=&#x27;, {replaceState:true})`</span>
+<span class="hljs-bullet">  -</span> Tombol <span class="hljs-code">`[🔍 Cari Kota Lain -&gt; /cuaca/cari]`</span>
+<span class="hljs-bullet">  -</span> Footer <span class="hljs-code">`Sumber Open-Meteo (CAMS) • Bukan data BMKG resmi`</span>
+<span class="hljs-bullet">  -</span> Jika geolocation ditolak -&gt; toast + tetap Jakarta
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/lib/components/BottomNav.svelte`</span> ubah
+<span class="hljs-bullet">  -</span> Tambah tab <span class="hljs-code">`Cuaca`</span> <span class="hljs-code">`href=&quot;/cuaca&quot;`</span> icon sun/cloud <span class="hljs-code">`stroke=&quot;currentColor&quot;`</span>, active <span class="hljs-code">`text-red-500`</span>
+<span class="hljs-bullet">  -</span> Urutan: <span class="hljs-code">`[Berita /] [Cuaca /cuaca] [Tentang /tentang]`</span> (Market hidden)
+<span class="hljs-bullet">  -</span> <span class="hljs-code">`match: p.startsWith(&#x27;/cuaca&#x27;)`</span> agar <span class="hljs-code">`/cuaca/cari`</span> tetap active
+
+<span class="hljs-section">## Acceptance</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`/cuaca`</span> tampil 2 card rapi, dark mode kontras
+<span class="hljs-bullet">-</span> [ ] Klik <span class="hljs-code">`Gunakan Lokasi Saya`</span> -&gt; allow -&gt; URL ganti lat/lon -&gt; suhu update
+<span class="hljs-bullet">-</span> [ ] Tolak lokasi -&gt; tetap Jakarta
+<span class="hljs-bullet">-</span> [ ] BottomNav 3 tab, Cuaca active di <span class="hljs-code">`/cuaca`</span>
+
+<span class="hljs-section">## Referensi</span>
+<span class="hljs-code">`docs/PLAN_CUACA.md`</span> §5.1, §6 — <span class="hljs-code">`src/lib/components/BottomNav.svelte`</span> existing</code></pre><hr>
+<h3>Issue #5 — <code>[CUACA][C2-1] Halaman cari kota </code>/cuaca/cari<code> — geocoding + debounce</code></h3>
+<p><strong>Title:</strong> <code>[CUACA][C2-1] Halaman cari kota /cuaca/cari — geocoding + debounce</code></p>
+<p><strong>Labels:</strong> <code>enhancement</code>, <code>cuaca</code>, <code>phase:c2</code>, <code>area:routes</code></p>
+<p><strong>Body:</strong></p>
+<pre><code class="hljs language-md"><span class="hljs-section">## Tujuan</span>
+User bisa cari kota lain dan pindah cuaca.
+
+<span class="hljs-section">## Task</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/routes/cuaca/cari/+page.server.ts`</span> baru
+<span class="hljs-bullet">  -</span> Baca <span class="hljs-code">`?q=`</span>, jika kosong return <span class="hljs-code">`[]`</span>
+<span class="hljs-bullet">  -</span> <span class="hljs-code">`searchCity(q)`</span> -&gt; 5 hasil <span class="hljs-code">`{name, admin1, country, latitude, longitude}`</span>
+<span class="hljs-bullet">  -</span> Cache <span class="hljs-code">`weather:geo:{q}`</span> TTL 1 jam, <span class="hljs-code">`s-maxage=600`</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/routes/cuaca/cari/+page.svelte`</span> baru
+<span class="hljs-bullet">  -</span> Header <span class="hljs-code">`Cari Kota • Back -&gt; /cuaca`</span>
+<span class="hljs-bullet">  -</span> Input <span class="hljs-code">`placeholder=&quot;Cari kota, mis. Bandung&quot;`</span> + debounce 300ms (setTimeout -&gt; fetch, jangan hit tiap ketik)
+<span class="hljs-bullet">  -</span> List 5 hasil: <span class="hljs-code">`Bandung, Jawa Barat, Indonesia -6.9,107.6 -&gt; klik -&gt; goto(&#x27;/cuaca?lat=-6.9&amp;lon=107.6&amp;name=Bandung&#x27;)`</span>
+<span class="hljs-bullet">  -</span> Empty: <span class="hljs-code">`Tidak ada kota ditemukan`</span> + saran 3 kota <span class="hljs-code">`Jakarta, Surabaya, Medan`</span> (klik langsung)
+<span class="hljs-bullet">  -</span> Loading state + <span class="hljs-code">`aria-label`</span>
+
+<span class="hljs-section">## Acceptance</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`/cuaca/cari?q=Bandung`</span> -&gt; 5 hasil
+<span class="hljs-bullet">-</span> [ ] Ketik di input -&gt; 300ms baru fetch
+<span class="hljs-bullet">-</span> [ ] Klik hasil -&gt; pindah ke <span class="hljs-code">`/cuaca?lat=&amp;lon=`</span> dengan cuaca kota itu
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`q=`</span> kosong atau 0 hasil -&gt; empty + saran 3 kota
+
+<span class="hljs-section">## Referensi</span>
+<span class="hljs-code">`docs/PLAN_CUACA.md`</span> §5.2, §3 (cache geo)</code></pre><hr>
+<h3>Issue #6 — <code>[CUACA][C2-2] Forecast 7 hari + Hourly 24 jam + polish</code></h3>
+<p><strong>Title:</strong> <code>[CUACA][C2-2] Forecast 7 hari + Hourly 24 jam + polish &amp; error handling</code></p>
+<p><strong>Labels:</strong> <code>enhancement</code>, <code>cuaca</code>, <code>phase:c2</code>, <code>area:ui</code></p>
+<p><strong>Body:</strong></p>
+<pre><code class="hljs language-md"><span class="hljs-section">## Tujuan</span>
+Cuaca lengkap seperti aplikasi cuaca beneran.
+
+<span class="hljs-section">## Task</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`src/lib/components/ForecastStrip.svelte`</span> baru
+<span class="hljs-bullet">  -</span> Props: <span class="hljs-code">`daily, hourly`</span>
+<span class="hljs-bullet">  -</span> UI 1: 7 hari horizontal scroll <span class="hljs-code">`Sen 31°/26° 🌤️ • Sel 32°/27° 🌧️`</span> pakai <span class="hljs-code">`weatherCode.icon`</span>
+<span class="hljs-bullet">  -</span> UI 2: Hourly 24 jam strip <span class="hljs-code">`12:00 31° • 13:00 32° • ...`</span>
+<span class="hljs-bullet">  -</span> Style <span class="hljs-code">`overflow-x-auto rounded-xl border bg-white dark:bg-neutral-900`</span>
+<span class="hljs-bullet">-</span> [ ] Pasang di <span class="hljs-code">`src/routes/cuaca/+page.svelte`</span> di bawah 2 card
+<span class="hljs-bullet">-</span> [ ] Polish:
+<span class="hljs-bullet">  -</span> Open-Meteo 5xx -&gt; card <span class="hljs-code">`Tidak tersedia`</span> + tombol <span class="hljs-code">`Muat ulang`</span>, jangan crash
+<span class="hljs-bullet">  -</span> <span class="hljs-code">`Promise.allSettled`</span> suhu gagal -&gt; polusi tetap tampil
+<span class="hljs-bullet">  -</span> Geocoding 0 hasil -&gt; saran 3 kota
+<span class="hljs-bullet">  -</span> <span class="hljs-code">`prefers-reduced-motion`</span> jika ada animasi
+
+<span class="hljs-section">## Acceptance</span>
+<span class="hljs-bullet">-</span> [ ] <span class="hljs-code">`/cuaca`</span> tampil 2 card + forecast 7 hari + hourly 24 jam
+<span class="hljs-bullet">-</span> [ ] Data dari <span class="hljs-code">`weather.daily`</span> dan <span class="hljs-code">`weather.hourly`</span> benar (cek 7 item)
+<span class="hljs-bullet">-</span> [ ] Offline/mock 5xx -&gt; halaman tidak putih, card <span class="hljs-code">`Tidak tersedia`</span>
+
+<span class="hljs-section">## Referensi</span>
+<span class="hljs-code">`docs/PLAN_CUACA.md`</span> §5.1, §9</code></pre><hr>
+<h3>Issue #7 — <code>[CUACA][C3] Verifikasi build + PWA + docs</code></h3>
+<p><strong>Title:</strong> <code>[CUACA][C3] Verifikasi build + PWA + update CHANGELOG</code></p>
+<p><strong>Labels:</strong> <code>enhancement</code>, <code>cuaca</code>, <code>phase:c2</code>, <code>area:docs</code></p>
+<p><strong>Body:</strong></p>
+<pre><code class="hljs language-md"><span class="hljs-section">## Tujuan</span>
+Pastikan tidak rusak build dan tercatat.
+
+<span class="hljs-section">## Task</span>
+<span class="hljs-bullet">-</span> [ ] Jalankan:
+<span class="hljs-code">```bash
+npm run check   # 0 error, 0 warning
+npm run build   # pass, PWA precache OK
+npm run dev     # cek manual:
+# /cuaca -&gt; Jakarta + 2 card + 7 hari + hourly
+# Gunakan Lokasi Saya -&gt; allow -&gt; lat/lon update
+# /cuaca/cari?q=Surabaya -&gt; 5 hasil -&gt; klik -&gt; Surabaya
+# tolak lokasi -&gt; tetap Jakarta
+# dark mode kontras
+# BottomNav 3 tab active benar
+npm run preview # cek safe-area mobile</span></code></pre><ul>
+<li><input disabled="" type="checkbox"> Update <code>docs/CHANGELOG.md</code> tambah entry <code>2026-08-xx — Phase C1/C2 Cuaca</code></li>
+<li><input disabled="" type="checkbox"> Pastikan <code>AGENTS.md</code> sudah sync (done 27-08-2026, tidak perlu ubah lagi)</li>
+</ul>
+<h2>Acceptance</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <code>check</code> + <code>build</code> pass</li>
+<li><input disabled="" type="checkbox"> Manual checklist di atas semua OK</li>
+<li><input disabled="" type="checkbox"> CHANGELOG ter-update</li>
+</ul>
+<h2>Referensi</h2>
+<p><code>docs/PLAN_CUACA.md</code> §8, <code>docs/CHANGELOG.md</code> format sebelumnya</p>
+<pre><code>
+---
+
+## Ringkasan Urutan
+`#1 -&gt; #2 -&gt; #3 -&gt; #4` = **C1 Done (bisa demo)** -&gt; `#5 -&gt; #6` = **C2 Done (komplit)** -&gt; `#7` Verifikasi
+
+&gt; Mau saya buatkan branch `feat/cuaca-c1` dan mulai dari Issue #1?</code></pre>
+<footer class="artifact-footer">source: /Volumes/samsung_apfs/svelte.portal.berita.indonesia</footer>
+</article>
+
+<script>
+(function () {
+  var slug = "plan-cuaca-github-issues-draft-7-issues";
+  var es = new EventSource("/events");
+  es.addEventListener("reload", function (e) {
+    try { if (e.data === slug || e.data === "*") location.reload(); } catch (_) {}
+  });
+})();
+</script>
+</body>
+</html>
