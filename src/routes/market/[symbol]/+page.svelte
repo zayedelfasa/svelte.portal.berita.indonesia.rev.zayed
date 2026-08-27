@@ -60,5 +60,5 @@
 		<MarketCalculator item={item} {usdIdr} />
 	</div>
 
-	<p class="mt-4 text-[11px] leading-relaxed text-gray-400 dark:text-neutral-500">Sumber: Yahoo Finance & CoinGecko. Data delay ~10 menit. Bukan rekomendasi investasi.</p>
+	<p class="mt-4 text-[11px] leading-relaxed text-gray-400 dark:text-neutral-500">Sumber: TwelveData & CoinGecko. Data delay ~10 menit. Bukan rekomendasi investasi.</p>
 </div>

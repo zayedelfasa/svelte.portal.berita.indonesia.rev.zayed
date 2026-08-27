@@ -1,9 +1,9 @@
 # PLAN_CUACA.md — Tab Cuaca & Polusi (Tab ke-3/4)
 
-> Branch `dev` — 2026-01-04
-> Status: **Planned** — belum dikerjakan
+> Branch `dev` — 2026-08-27
+> Status: **Done** — Phase C1/C2 selesai, 7 issues closed, `check 0` `build pass`
 > Referensi: `../AGENTS.md`, `../ARCHITECTURE.md`, `DOC_FITUR_MARKET_TENTANG.md` (§9 Roadmap)
-> BottomNav saat ini: `Berita /` · `Market /market` · `Tentang /tentang` (3 tab). Cuaca akan jadi **tab ke-4** `Cuaca /cuaca` (atau ganti urutan jadi `Berita | Market | Cuaca | Tentang` — 4 tab masih ideal).
+> BottomNav saat ini: `Berita /` · `Cuaca /cuaca` · `Tentang /tentang` (3 tab, Market hidden). Cuaca sudah jadi **tab ke-2** `Cuaca /cuaca` + `/cuaca/cari`.
 
 ## 1. Ringkasan
 

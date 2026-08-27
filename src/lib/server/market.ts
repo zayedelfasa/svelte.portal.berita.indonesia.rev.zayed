@@ -1,5 +1,6 @@
 import { cached, peekCache, TTL } from './cache';
 import { fetchWithTimeout } from './http';
+import { env } from '$env/dynamic/private';
 
 export interface MarketItem {
 	symbol: string;
@@ -29,13 +30,12 @@ const CRYPTO_MAP: Record<string, { symbol: string; name: string }> = {
 
 const CRYPTO_IDS = Object.keys(CRYPTO_MAP).join(',');
 
-// Yahoo symbols
-const YAHOO_SYMBOLS = [
-	{ yahoo: '^JKSE', symbol: 'IHSG', name: 'IHSG', currency: 'IDR', type: 'idx' as const },
-	{ yahoo: '^KLCI', symbol: 'LQ45*', name: 'LQ45', currency: 'IDR', type: 'idx' as const }, // placeholder, will try JKSE-based fallback
-	{ yahoo: 'IDR=X', symbol: 'USD/IDR', name: 'USD/IDR', currency: 'IDR', type: 'forex' as const }
+// TwelveData symbols (IHSG = JKSE composite on IDX)
+const TWELVE_SYMBOLS = [
+	{ td: 'JKSE', symbol: 'IHSG', name: 'IHSG', currency: 'IDR', type: 'idx' as const },
+	{ td: 'USD/IDR', symbol: 'USD/IDR', name: 'USD/IDR', currency: 'IDR', type: 'forex' as const }
 ];
-// Note: LQ45 Yahoo symbol is not reliable; we fetch ^JKSE twice and derive fallback if needed.
+// LQ45 derived from IHSG if not available via TwelveData (no reliable LQ45.JK quote)
 
 async function fetchCrypto(): Promise<MarketItem[]> {
 	return cached('market:crypto', async () => {
@@ -73,7 +73,6 @@ async function fetchCrypto(): Promise<MarketItem[]> {
 
 async function fetchForexFallback(): Promise<MarketItem | null> {
 	try {
-		// Poin 1: exchangerate.host 0-key fallback untuk USD/IDR kalau Yahoo 403 di Vercel
 		const res = await fetchWithTimeout('https://api.exchangerate.host/convert?from=USD&to=IDR', {}, 7000);
 		if (!res.ok) throw new Error(`exchangerate ${res.status}`);
 		const j = (await res.json()) as { result?: number; info?: { rate?: number } };
@@ -85,52 +84,33 @@ async function fetchForexFallback(): Promise<MarketItem | null> {
 	}
 }
 
-async function fetchYahooItem(yahooSymbol: string, meta: (typeof YAHOO_SYMBOLS)[number]): Promise<MarketItem | null> {
+async function fetchTwelveItem(tdSymbol: string, meta: (typeof TWELVE_SYMBOLS)[number]): Promise<MarketItem | null> {
+	const key = (env.TWELVEDATA_KEY as string | undefined)?.trim();
+	if (!key) {
+		if (meta.symbol === 'USD/IDR') return fetchForexFallback();
+		return null;
+	}
 	try {
-		// Layer 1: query1, Layer 2: query2 fallback (Yahoo 403 sering hanya di query1)
-		const hosts = ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com'];
-		let lastErr: unknown;
-		for (const host of hosts) {
-			try {
-				const url = `${host}/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?interval=1d&range=7d`;
-				const res = await fetchWithTimeout(url, {}, 7000);
-				if (!res.ok) throw new Error(`yahoo ${res.status}`);
-				const json = (await res.json()) as {
-					chart?: {
-						result?: Array<{
-							meta?: { regularMarketPrice?: number; previousClose?: number; currency?: string };
-							indicators?: { quote?: Array<{ close?: (number | null)[] }> };
-						}>
-					};
-				};
-				const result = json.chart?.result?.[0];
-				const metaRes = result?.meta;
-				if (metaRes?.regularMarketPrice == null) return null;
-				const price = metaRes.regularMarketPrice;
-				const prev = metaRes.previousClose;
-				const change = prev != null && prev !== 0 ? ((price - prev) / prev) * 100 : null;
-				// A3: ambil 7 titik close untuk sparkline
-				const closes = result?.indicators?.quote?.[0]?.close;
-				const sparkline = Array.isArray(closes)
-					? closes.filter((c): c is number => typeof c === 'number' && !Number.isNaN(c)).slice(-7)
-					: [];
-				return {
-					symbol: meta.symbol,
-					name: meta.name,
-					price,
-					change24h: change,
-					currency: meta.currency,
-					type: meta.type,
-					sparkline
-				};
-			} catch (e) {
-				lastErr = e;
-				continue;
+		const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(tdSymbol)}&interval=1day&apikey=${encodeURIComponent(key)}`;
+		const res = await fetchWithTimeout(url, {}, 7000);
+		if (!res.ok) throw new Error(`twelvedata ${res.status}`);
+		const j = (await res.json()) as { price?: string; close?: string; percent_change?: string; previous_close?: string; currency?: string; status?: string; message?: string };
+		if (j.status === 'error') throw new Error(j.message ?? 'twelvedata error');
+		const price = j.price != null ? Number(j.price) : j.close != null ? Number(j.close) : NaN;
+		if (!Number.isFinite(price)) return null;
+		const change = j.percent_change != null ? Number(j.percent_change) : null;
+		// sparkline 7d via time_series
+		let sparkline: number[] = [];
+		try {
+			const tsUrl = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(tdSymbol)}&interval=1day&outputsize=7&apikey=${encodeURIComponent(key)}`;
+			const tsRes = await fetchWithTimeout(tsUrl, {}, 7000);
+			if (tsRes.ok) {
+				const tj = (await tsRes.json()) as { values?: Array<{ close?: string }> };
+				if (Array.isArray(tj.values)) sparkline = tj.values.map((v) => Number(v.close)).filter((n) => Number.isFinite(n)).reverse().slice(-7);
 			}
-		}
-		throw lastErr ?? new Error('yahoo all hosts fail');
+		} catch {}
+		return { symbol: meta.symbol, name: meta.name, price, change24h: Number.isFinite(change as number) ? (change as number) : null, currency: meta.currency, type: meta.type, sparkline };
 	} catch {
-		// Fallback forex kalau Yahoo fail dan ini USD/IDR
 		if (meta.symbol === 'USD/IDR') {
 			const fb = await fetchForexFallback();
 			if (fb) return fb;
@@ -141,34 +121,17 @@ async function fetchYahooItem(yahooSymbol: string, meta: (typeof YAHOO_SYMBOLS)[
 
 async function fetchIdxForex(): Promise<MarketItem[]> {
 	return cached('market:idx', async () => {
-		const results = await Promise.allSettled(
-			YAHOO_SYMBOLS.map((m) => fetchYahooItem(m.yahoo, m))
-		);
+		const results = await Promise.allSettled(TWELVE_SYMBOLS.map((m) => fetchTwelveItem(m.td, m)));
 		const items: MarketItem[] = [];
-		for (const r of results) {
-			if (r.status === 'fulfilled' && r.value) items.push(r.value);
-		}
-		// JANGAN GUNAKAN DUMMY: kalau semua Yahoo 403 → return [] biar UI jujur "data tidak tersedia"
-		// Jangan hardcode 7234.5 seolah live. Stale fallback ditangani di fetchMarketData.
+		for (const r of results) if (r.status === 'fulfilled' && r.value) items.push(r.value);
 		if (items.length === 0) return [];
-	// If LQ45 missing, duplicate IHSG with LQ45 label and slight variation to avoid empty cell
-	const hasLQ45 = items.some((i) => i.symbol.startsWith('LQ45'));
-	if (!hasLQ45) {
-		const ihsg = items.find((i) => i.symbol === 'IHSG');
-		if (ihsg) {
-			items.splice(1, 0, {
-				symbol: 'LQ45',
-				name: 'LQ45 (estimasi)',
-				price: Math.round(ihsg.price * 0.135),
-				change24h: ihsg.change24h != null ? ihsg.change24h * 0.9 : null,
-				currency: 'IDR',
-				type: 'idx',
-				isEstimated: true
-			});
+		const hasLQ45 = items.some((i) => i.symbol.startsWith('LQ45'));
+		if (!hasLQ45) {
+			const ihsg = items.find((i) => i.symbol === 'IHSG');
+			if (ihsg) {
+				items.splice(1, 0, { symbol: 'LQ45', name: 'LQ45 (estimasi)', price: Math.round(ihsg.price * 0.135), change24h: ihsg.change24h != null ? ihsg.change24h * 0.9 : null, currency: 'IDR', type: 'idx', isEstimated: true });
+			}
 		}
-	}
-		// Normalize LQ45* -> LQ45
-		for (const it of items) if (it.symbol === 'LQ45*') it.symbol = 'LQ45';
 		return items;
 	}, TTL.idx);
 }

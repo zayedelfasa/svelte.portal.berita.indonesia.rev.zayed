@@ -117,7 +117,7 @@
 	{#if isStale && items.length > 0}
 		<div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-900 dark:bg-amber-950/30">
 			<p class="text-xs font-bold text-amber-800 dark:text-amber-300">Menampilkan data terakhir — diperbarui {timeAgo(fetchedAt!, clock.now)}</p>
-			<p class="text-[11px] leading-relaxed text-amber-700 dark:text-amber-400">Sumber Yahoo Finance / CoinGecko sedang sibuk atau dibatasi. Data di bawah adalah cache terakhir sebelum muat ulang. Silakan coba lagi beberapa saat lagi.</p>
+			<p class="text-[11px] leading-relaxed text-amber-700 dark:text-amber-400">Sumber TwelveData / CoinGecko sedang sibuk atau dibatasi. Data di bawah adalah cache terakhir sebelum muat ulang. Silakan coba lagi beberapa saat lagi.</p>
 			<button onclick={() => location.reload()} class="mt-2 rounded-full bg-amber-600 px-3 py-1 text-xs font-bold text-white">Muat ulang</button>
 		</div>
 	{/if}
@@ -126,14 +126,14 @@
 {#if items.length === 0}
 	<div class="mx-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center dark:border-neutral-800 dark:bg-neutral-900">
 		<p class="text-sm font-bold text-slate-800 dark:text-neutral-100">Data market IHSG/LQ45 sementara tidak tersedia</p>
-		<p class="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-neutral-400">Sumber Yahoo Finance sedang sibuk atau dibatasi aksesnya. Kami tidak menampilkan angka perkiraan agar tetap jujur. Data akan tampil kembali otomatis setelah sumber pulih.</p>
+		<p class="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-neutral-400">Sumber TwelveData sedang sibuk atau dibatasi aksesnya. Kami tidak menampilkan angka perkiraan agar tetap jujur. Data akan tampil kembali otomatis setelah sumber pulih.</p>
 		<p class="mt-1 text-[11px] text-slate-500 dark:text-neutral-500">Silakan muat ulang beberapa saat lagi. Terima kasih atas pengertiannya.</p>
 		<button onclick={() => location.reload()} class="mt-3 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white dark:bg-white dark:text-slate-900">Muat ulang</button>
 	</div>
 {:else if filteredCount === 0}
 	<div class="mx-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center dark:border-neutral-800 dark:bg-neutral-900">
 		<p class="text-sm font-bold text-slate-800 dark:text-neutral-100">Data market IHSG/LQ45 sementara tidak tersedia</p>
-		<p class="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-neutral-400">Sumber Yahoo Finance sedang sibuk atau dibatasi aksesnya. Kami tidak menampilkan angka perkiraan agar tetap jujur. Data akan tampil kembali otomatis setelah sumber pulih.</p>
+		<p class="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-neutral-400">Sumber TwelveData sedang sibuk atau dibatasi aksesnya. Kami tidak menampilkan angka perkiraan agar tetap jujur. Data akan tampil kembali otomatis setelah sumber pulih.</p>
 		<p class="mt-1 text-[11px] text-slate-500 dark:text-neutral-500">Silakan muat ulang beberapa saat lagi. Terima kasih atas pengertiannya.</p>
 		<button onclick={() => location.reload()} class="mt-3 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white dark:bg-white dark:text-slate-900">Muat ulang</button>
 	</div>
@@ -195,7 +195,7 @@
 		{#if displayedIdxForex.length === 0}
 			<div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center dark:border-neutral-800 dark:bg-neutral-900">
 				<p class="text-sm font-bold text-slate-800 dark:text-neutral-100">Data market IHSG/LQ45 sementara tidak tersedia</p>
-				<p class="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-neutral-400">Sumber Yahoo Finance sedang sibuk atau dibatasi aksesnya. Kami tidak menampilkan angka perkiraan agar tetap jujur. Data akan tampil kembali otomatis setelah sumber pulih.</p>
+				<p class="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-neutral-400">Sumber TwelveData sedang sibuk atau dibatasi aksesnya. Kami tidak menampilkan angka perkiraan agar tetap jujur. Data akan tampil kembali otomatis setelah sumber pulih.</p>
 				<p class="mt-1 text-[11px] text-slate-500 dark:text-neutral-500">Silakan muat ulang beberapa saat lagi. Terima kasih atas pengertiannya.</p>
 				<button onclick={() => location.reload()} class="mt-3 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white dark:bg-white dark:text-slate-900">Muat ulang</button>
 			</div>
@@ -265,7 +265,7 @@
 				</a>
 			{/each}
 		</div>
-		<p class="mt-3 text-[11px] leading-relaxed text-gray-400 dark:text-neutral-500">Sumber: Yahoo Finance (IHSG, Forex) & CoinGecko (crypto). Data delay ~10 menit. Bukan rekomendasi investasi.</p>
+		<p class="mt-3 text-[11px] leading-relaxed text-gray-400 dark:text-neutral-500">Sumber: TwelveData (IHSG, Forex) & CoinGecko (crypto). Data delay ~10 menit. Bukan rekomendasi investasi.</p>
 		<div class="mt-3">
 			{#if items.length > 0}
 				<MarketCalculator item={(items.find((i) => i.symbol === 'BTC') ?? items[0])!} {usdIdr} />

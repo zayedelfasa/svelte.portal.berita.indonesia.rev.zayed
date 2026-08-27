@@ -1,16 +1,53 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
-	const navs = [
+	let cuacaHref = $state('/cuaca');
+
+	function syncCuacaHref() {
+		if (!browser) return;
+		try {
+			const raw = localStorage.getItem('cuaca:loc');
+			if (raw) {
+				const { lat, lon } = JSON.parse(raw) as { lat: number; lon: number };
+				if (Number.isFinite(lat) && Number.isFinite(lon)) {
+					cuacaHref = `/cuaca?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`;
+					return;
+				}
+			}
+		} catch {}
+		cuacaHref = '/cuaca';
+	}
+
+	onMount(() => {
+		syncCuacaHref();
+		const onStorage = () => syncCuacaHref();
+		window.addEventListener('storage', onStorage);
+		// sync tiap navigasi (page berubah)
+		const iv = setInterval(syncCuacaHref, 1000);
+		return () => {
+			window.removeEventListener('storage', onStorage);
+			clearInterval(iv);
+		};
+	});
+
+	$effect(() => {
+		// re-sync saat pathname berubah (pindah tab)
+		void page.url.pathname;
+		if (browser) syncCuacaHref();
+	});
+
+	const navs = $derived([
 		{
 			href: '/',
 			label: 'Berita',
 			match: (p: string) => p === '/' || p.startsWith('/baca') || p.startsWith('/cari') || p.startsWith('/media') || p.startsWith('/simpan'),
 			icon: 'berita'
 		},
-		{ href: '/market', label: 'Market', match: (p: string) => p.startsWith('/market'), icon: 'market' },
+		{ href: cuacaHref, label: 'Cuaca', match: (p: string) => p.startsWith('/cuaca'), icon: 'cuaca' },
 		{ href: '/tentang', label: 'Tentang', match: (p: string) => p.startsWith('/tentang'), icon: 'tentang' }
-	] as const;
+	]);
 
 	const pathname = $derived(page.url.pathname);
 	function isActive(href: string, match: (p: string) => boolean) {
@@ -38,9 +75,9 @@
 					<path d="M16 2v4" /><path d="M8 2v4" /><path d="M4 10h16" />
 					<path d="M8 14h8" /><path d="M8 18h5" />
 				</svg>
-			{:else if n.icon === 'market'}
+			{:else if n.icon === 'cuaca'}
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={active ? 2.2 : 1.8} stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
-					<path d="M3 3v18h18" /><path d="M7 16l4-4 4 3 5-7" />
+					<circle cx="12" cy="12" r="4" /><path d="M12 2v1" /><path d="M12 21v1" /><path d="M4.2 4.2l.7.7" /><path d="M19.1 19.1l.7.7" /><path d="M2 12h1" /><path d="M21 12h1" /><path d="M4.2 19.8l.7-.7" /><path d="M19.1 4.9l.7-.7" />
 				</svg>
 			{:else}
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={active ? 2.2 : 1.8} stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">

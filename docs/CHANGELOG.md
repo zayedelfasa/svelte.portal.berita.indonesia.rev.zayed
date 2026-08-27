@@ -184,9 +184,55 @@ Jika stale cache tersedia:
 - Tidak ada API key berbayar yang ditambahkan.
 - Tidak ada library UI berat yang ditambahkan.
 
+## 2026-08-27 — Tunda Market, Switch ke PLAN_CUACA, Hide Tab Market
+
+- Market ditunda: Yahoo 403, TwelveData tidak cover JKSE/IHSG (404), idx.co.id Cloudflare block, GoAPI IDX 550k paid → tidak ada provider free yang pas untuk IDX.
+- `market.ts` Yahoo → TwelveData (FOREX) + exchangerate fallback tetap, tapi IDX kosong jujur (no dummy).
+- `BottomNav.svelte` Market OFF → ganti ke `Berita | Cuaca | Tentang` (Market hidden, route /market tetap ada tapi tidak di-nav).
+- `+layout.svelte` MarketTicker conditional `{#if data?.market}`.
+- Fokus next: `docs/PLAN_CUACA.md` Phase C1/C2 (Open-Meteo Weather+Air Quality+Geocoding, gratis unlimited).
+- `npm run check` 0 error, `build` pass.
+
+## 2026-08-27 — Phase C1/C2 Cuaca: Open-Meteo, Geocoding, Forecast & Polish
+
+Branch kerja: `dev` — 7 issues (#1-#7) → #1-#6 closed, #7 verifikasi
+
+### 1. Backend Cuaca (C1-1, C1-2)
+- Baru `src/lib/weatherCode.ts` — mapping WMO 0-99 → label/icon ID
+- Baru `src/lib/server/weather.ts` — `fetchWeather`, `fetchAirQuality`, `searchCity`, `reverseGeocode` via Open-Meteo gratis unlimited, `fetchWithTimeout(7000)` + `cached()`
+- Cache split baru di `cache.ts`: `weather:10m`, `geo:1j`, `reverse:1d`
+- `Promise.allSettled` — suhu gagal → polusi tetap tampil, card `Tidak tersedia`
+
+### 2. Halaman Cuaca (C1-3, C1-4)
+- Baru `src/routes/cuaca/+page.server.ts` — `?lat=&lon=&name=` default Jakarta -6.2088,106.8456, parallel fetch, `reverseGeocode` fallback, tanpa `setHeaders` (hindari double cache-control dengan layout)
+- Baru `src/lib/components/WeatherCard.svelte` — standar `rounded-xl border-gray-100 bg-white` (bukan gradient), `Lokasi Saat Ini` uppercase, `H/L`, humidity, wind, `timeAgo`
+- Baru `src/lib/components/AirQualityCard.svelte` — AQI 0-300 warna (Baik hijau → Berbahaya ungu), progress bar, PM2.5/PM10/O3, badge `Tidak Sehat`
+- `BottomNav.svelte` sudah `Berita|Cuaca|Tentang` — tidak perlu ubah (sync 27-08)
+- `+layout.svelte` Footer hide di `/cuaca` → `isCuaca` dari `page.url.pathname.startsWith('/cuaca')`
+- Geolocation `Gunakan Lokasi Saya` → `navigator.geolocation` → `goto('/cuaca?lat=&lon=', replaceState)`
+
+### 3. Search & Forecast (C2-1, C2-2)
+- Baru `src/routes/cuaca/cari/+page.server.ts` + `+page.svelte` — `?q=` debounce 300ms → `searchCity` 5 hasil, kartu Kota Populer, empty `Tidak ada kota`
+- Baru `src/lib/components/ForecastStrip.svelte` — 7 hari (`Sen 31°/26°`) + 24 jam horizontal scroll, `border-gray-100 bg-gray-50`
+- Standar UI disamakan `tentang`/`market`: `px-4 py-4`, `rounded-xl border-gray-100`, `text-xs font-bold uppercase tracking-wide`
+
+### 4. Revisi & Fix
+- Fix 500 `cache-control header already set` → hapus `setHeaders` di `cuaca` pages (layout sudah set `s-maxage=600`)
+- Revisi kaku → standar portal (hilangkan gradient, pakai `border-gray-100 bg-white`)
+- Tombol `Lokasi Saya` + `Cari Kota` pindah ke atas (hanya 1 pasang, hapus duplikat bawah)
+- Footer `Berita dikumpulkan` hide di tab cuaca
+- Persist lokasi: `localStorage 'cuaca:loc'` → `BottomNav` `cuacaHref` dinamis + `cuaca/+page.svelte` auto-restore + `cuaca/cari` pick save → pindah tab Berita → balik Cuaca tetap lokasi terakhir (bukan default)
+- `npm run check` 0 error 0 warning, `npm run build` pass (7.1-9s)
+
+### 5. Validasi
+- Preview `GET /cuaca` 200 → Jakarta 32° Cerah Berawan, AQI 165 Sangat Tidak Sehat, 7 hari + 24 jam tampil
+- `/cuaca/cari?q=Bandung` 5 hasil → klik → `/cuaca?lat=&lon=` Bandung
+- Geolocation allow/deny, dark mode, BottomNav active `Cuaca` OK
+- Footer hide di `/cuaca`, muncul di `/`
+
 ## Pekerjaan yang Belum Dikerjakan
 
-### Market
+### Market — TUNDA
 
 - Fallback layer 3 untuk IDX selain Yahoo Finance.
 - Watchlist.
