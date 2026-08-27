@@ -61,7 +61,7 @@
 				locating = false;
 				const lat = pos.coords.latitude;
 				const lon = pos.coords.longitude;
-				saveLoc(lat, lon);
+				// jangan saveLoc di sini (nama belum reverse), biar $effect save setelah server return cityName yang benar
 				goto(`/cuaca?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`, { replaceState: true });
 			},
 			(err) => {

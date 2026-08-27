@@ -23,7 +23,7 @@ Dibangun dengan **SvelteKit 2 (Svelte 5 runes) + Tailwind CSS v4**, deploy targe
 
 Aggregator berita: [berita-indo-api](https://github.com/satyawikananda/berita-indo-api).
 Market: [CoinGecko API v3](https://api.coingecko.com/api/v3/coins/markets) (crypto, tanpa key) + [TwelveData](https://api.twelvedata.com/quote) (Forex USD/IDR, tanpa key, IDX tunda) — no dummy, empty jujur. Detail: [`docs/DOC_FITUR_MARKET_TENTANG.md`](docs/DOC_FITUR_MARKET_TENTANG.md).
-Cuaca: [Open-Meteo](https://open-meteo.com) Weather + Air Quality + Geocoding (gratis tanpa key, unlimited) — suhu, AQI, forecast 7 hari, hourly 24 jam. Detail: [`docs/PLAN_CUACA.md`](docs/PLAN_CUACA.md).
+Cuaca: [Open-Meteo](https://open-meteo.com) Weather + Air Quality + Geocoding (gratis tanpa key, unlimited) + [BigDataCloud](https://www.bigdatacloud.com) reverse-geocode (gratis tanpa key) — suhu, AQI, forecast 7 hari, hourly 24 jam, nama kota dari lat/lon. Detail: [`docs/PLAN_CUACA.md`](docs/PLAN_CUACA.md).
 
 > Tribun News / Jawa Pos / Suara.com tidak dipakai — endpoint & RSS-nya mati/bot-block saat riset (lihat `docs/PLAN.md`).
 

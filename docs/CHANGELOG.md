@@ -240,6 +240,16 @@ Branch kerja: `dev`
 - Update docs: `README.md`, `ARCHITECTURE.md`, `src/routes/README.md` sinkron kondisi baru
 - Validasi: `npm run check` 0 error, 0 warning
 
+## 2026-08-27 — Fix Cuaca: Reverse Geocode Lokasi Saya
+
+Branch kerja: `dev`
+
+- Bug: `Lokasi Saya` hanya tampil lat/lon tanpa nama kota → `geocoding-api.open-meteo.com/v1/reverse` ternyata 404 (Open-Meteo tidak punya endpoint reverse, hanya `search` + `get`)
+- Fix `src/lib/server/weather.ts` `reverseGeocode()` → ganti ke `api.bigdatacloud.net/data/reverse-geocode-client?latitude=&longitude=&localityLanguage=id` gratis tanpa key, unlimited → parse `city/locality, principalSubdivision, countryName` → `"Bandung, Jawa Barat, Indonesia"` (test -6.9147,107.6098 → 200 OK)
+- Fix `src/routes/cuaca/+page.svelte` `useMyLocation()` → hapus `saveLoc` prematur sebelum `goto` (simpan nama stale Jakarta) → biar `$effect` save setelah server return `cityName` benar
+- Update `README.md` sumber cuaca tambah BigDataCloud
+- Validasi: `npm run check` 0 error, `npm run build` pass
+
 ## Pekerjaan yang Belum Dikerjakan
 
 ### Market — TUNDA

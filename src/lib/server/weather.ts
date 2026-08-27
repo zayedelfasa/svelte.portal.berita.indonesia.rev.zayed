@@ -163,14 +163,15 @@ export async function reverseGeocode(lat: number, lon: number): Promise<string |
 	return cached(
 		key,
 		async () => {
-			const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=id`;
+			// Open-Meteo has no reverse endpoint (404) → use BigDataCloud free reverse (no key)
+			const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`;
 			const res = await fetchWithTimeout(url, { headers: { accept: 'application/json' } }, 7000);
-			if (!res.ok) throw new Error(`open-meteo reverse ${res.status}`);
-			const j = (await res.json()) as { results?: Array<{ name?: string; admin1?: string; country?: string }> };
-			if (!Array.isArray(j.results) || j.results.length === 0) return null;
-			const r = j.results[0];
-			const parts = [r.name, r.admin1, r.country].filter(Boolean);
-			return parts.join(', ') || r.name || null;
+			if (!res.ok) throw new Error(`bigdatacloud reverse ${res.status}`);
+			const j = (await res.json()) as { city?: string; locality?: string; principalSubdivision?: string; countryName?: string };
+			const parts = [j.city || j.locality, j.principalSubdivision, j.countryName].filter(Boolean);
+			if (parts.length > 0) return parts.join(', ');
+			// fallback: try localityInfo if available
+			return j.city || j.locality || null;
 		},
 		TTL.reverse
 	);
