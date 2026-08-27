@@ -7,42 +7,42 @@ dieksekusi dari `+page.server.ts`, `+server.ts`, atau file lain di dalam `server
 
 | File | Fungsi |
 |---|---|
-| `http.ts` | `fetchWithTimeout(url, opts, ms=8000)` dengan AbortController + UA browser; `stripHtml()` bersihkan tag+entitas; `firstImgSrc()` ambil `<img src>` pertama (skip data-uri & pixel 1x1) |
-| `rss.ts` | `parseRss(xml, sourceId)` — fast-xml-parser, `removeNSPrefix` (`content:encoded`→`encoded`), ekstrak gambar dari enclosure → img tag |
-| `aggregator.ts` | `fetchAggregator(path, id)` — fetch JSON berita-indo-api, normalisasi ke `Article[]` |
-| `cache.ts` | Map memori TTL 10 menit: `cached(key, fn)` + `invalidateCache(prefix)` untuk retry per-section |
-| `market.ts` | **Market** `fetchMarketData(): Promise<MarketData>` — CoinGecko `/coins/markets` (BTC/ETH/SOL/BNB/USDT) + Yahoo Finance `query1.finance.yahoo.com/v8/finance/chart/^JKSE,IDR=X` (IHSG/LQ45/USD·IDR); `cached('market:ticker')`, fallback dummy jika Yahoo 403, hitung `change24h` dari `previousClose` |
+| `http.ts` | `fetchWithTimeout(url, opts, ms=7000-8000)` AbortController + UA browser; `stripHtml()`; `firstImgSrc()` |
+| `rss.ts` | `parseRss(xml, sourceId)` — fast-xml-parser, `removeNSPrefix`, ekstrak enclosure → image |
+| `aggregator.ts` | `fetchAggregator(path, id)` — JSON berita-indo-api → `Article[]`, fallback RSS bila mati |
+| `cache.ts` | Map memori: `cached(key, fn, ttl)`, `peekCache(key)`, `invalidateCache(prefix)` + `TTL` split `{default:10m, crypto:2m, idx:15m, forex:10m, trending:1h, weather:10m, geo:1h, reverse:1d}` |
+| `market.ts` | **Market** `fetchMarketData(): Promise<MarketData>` — CoinGecko 5 crypto + TwelveData Forex (USD/IDR, IHSG via JKSE tunda) + `exchangerate.host` fallback; `cached('market:ticker')`, `peekCache` stale 24j, no dummy |
+| `weather.ts` | **Cuaca** `fetchWeather(lat,lon): WeatherData`, `fetchAirQuality(lat,lon): AirQualityData`, `searchCity(q): GeoCity[]`, `reverseGeocode(lat,lon): string` — Open-Meteo gratis unlimited, `cached('weather:*')` + `fetchWithTimeout(7000)` |
 | `sources/` | Adapter 11 media — [README](sources/README.md) |
+| `../weatherCode.ts` | Mapping WMO `weather_code → {label, icon}` ID (dipakai `WeatherCard`/`ForecastStrip`) |
 
 ## Alur request
 
 ```
-load function (berita)
-  → cached('rss:detik', fn)        # cek cache memori
-      → fetchWithTimeout(upstream) # timeout 8 detik
-      → parseRss / fetchAggregator # normalisasi Article[]
-  → slice(0, limit)
+load berita (+page.server.ts)
+  → cached('rss:detik', fn) → fetchWithTimeout → parseRss/fetchAggregator → Article[]
 
-load function (market — +layout.server.ts & /market)
-  → cached('market:ticker', fn)              # reuse key, TTL 10 menit
-      → fetchCrypto()  → CoinGecko API       # 5 crypto top
-      → fetchIdxForex() → Yahoo Finance      # IHSG/LQ45/USD·IDR, Promise.allSettled
-      → fallback dummy jika semua gagal → MarketData
+load market (+layout.server.ts & /market)
+  → cached('market:ticker') → fetchCrypto (CoinGecko) + fetchIdxForex (TwelveData, Promise.allSettled) → fallback stale 24j → MarketData (empty jujur jika gagal)
+
+load cuaca (/cuaca/+page.server.ts)
+  → Promise.allSettled([fetchWeather(lat,lon), fetchAirQuality(lat,lon), reverseGeocode(lat,lon)])
+      → cached('weather:current:{lat,lon}') → api.open-meteo.com/v1/forecast
+      → cached('weather:air:{lat,lon}')     → air-quality-api.open-meteo.com
+      → cached('weather:geo:{q}')           → geocoding-api.open-meteo.com/v1/search
+      → cached('weather:reverse:{lat,lon}') → geocoding-api.open-meteo.com/v1/reverse
+      → tanpa setHeaders (hindari double dengan layout, s-maxage via +layout.server.ts)
 ```
 
 ## Cache
 
-- TTL **10 menit**, prune otomatis saat map > 200 entri
-- Key convention:
-  - `rss:{id}` / `agg:{id}` — pool headline
-  - `rss:{id}:{cat}` / `agg:{id}:{cat}` — pool kategori
-  - `market:ticker` — MarketData (CoinGecko+Yahoo), dipakai `+layout.server.ts` & `/market` bersama
-  - Kategori = URL headline → reuse key headline (dedup)
-- Per-instance serverless: cache hangus saat instance cold start — itu kenapa
-  ada lapisan kedua di CDN (`s-maxage=600`)
+- TTL split: berita 10m, crypto 2m, idx 15m, forex 10m, trending 1h, weather 10m, geo 1h, reverse 1d; prune >200 entri
+- Keys: `rss:{id}`, `agg:{id}`, `market:ticker`, `market:trending`, `weather:current:{lat,lon}`, `weather:air:{lat,lon}`, `weather:geo:{q}`, `weather:reverse:{lat,lon}`
+- `peekCache` baca stale tanpa reset TTL (dipakai market fallback 24j)
+- Per-instance serverless + CDN `s-maxage=600` (`+layout.server.ts` set header, cuaca reuse tanpa set ulang)
 
 ## Menambah helper server
 
-1. Pure function murni (tanpa state global) → taruh di `http.ts`
-2. Butuh cache → bungkus dengan `cached()` dari `cache.ts`
-3. Selalu return tipe `Article[]` yang sudah dinormalisasi — jangan bocorkan bentuk mentah upstream ke route
+1. Pure function → `http.ts`
+2. Butuh cache → `cached(key, fn, TTL.xxx)` dari `cache.ts`
+3. Return tipe ternormalisasi (`Article[]` atau `WeatherData`) — jangan bocorkan mentah ke route

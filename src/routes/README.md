@@ -7,35 +7,37 @@ Konvensi: tiap folder = 1 route/halaman. File `+page.server.ts` = load data serv
 | Folder | URL | File kunci | Fungsi |
 |---|---|---|---|
 | `routes/` | `/` | `+page.server.ts` | Home: `Promise.allSettled` fetchTop(3) per media; filter `?kategori=` + `unsupported` count |
-| `routes/market/` | `/market` | `+page.server.ts` + `+page.svelte` | **Market**: tabel Saham/Forex (IHSG/LQ45/USD·IDR) + Crypto Top 5 (BTC/ETH/SOL/BNB/USDT), `MarketData` dari `fetchMarketData()` (reuse `market:ticker` cache), badge 24h hijau/merah |
-| `routes/tentang/` | `/tentang` | `+page.svelte` (static) | **Tentang Aplikasi**: 5 card — Apa ini / 3 Fitur / Teknologi / Sumber Data / Versi; tanpa load function |
-| `routes/media/[source]/` | `/media/:source` | `+page.server.ts` | List 50 artikel 1 media + load-more client (`visible` +10) |
-| `routes/baca/` | `/baca?source=&u=&id=` | `+page.server.ts` | Detail: `u` primary match → `id` fallback → telusuri pool kategori (anti-404); kirim `more` 3 artikel |
-| `routes/cari/` | `/cari?q=` | `+page.server.ts` | Filter pool cache 100/media (case-insensitive title+summary), max 50, s-maxage=120 |
-| `routes/simpan/` | `/simpan` | `+page.svelte` | Daftar snapshot bookmarks (client localStorage), pratinjau inline `ArticleView` |
-| `routes/api/source/[id]/` | `GET /api/source/:id?force=1` | `+server.ts` | Endpoint retry per-section; `force=1` → `invalidateCache` |
+| `routes/cuaca/` | `/cuaca` | `+page.server.ts` + `+page.svelte` | **Cuaca**: `?lat=&lon=&name=` default Jakarta -6.2088,106.8456, `Promise.allSettled` weather+air+reverse, 2 card `WeatherCard`+`AirQualityCard` + `ForecastStrip` 7 hari+24 jam, tombol atas `Lokasi Saya` (geolocation) + `Cari Kota`, persist `localStorage 'cuaca:loc'` + auto-restore, Footer hide di layout |
+| `routes/cuaca/cari/` | `/cuaca/cari?q=` | `+page.server.ts` + `+page.svelte` | **Cari Kota**: `?q=` debounce 300ms → `searchCity` 5 hasil, kartu Kota Populer, pick → `/cuaca?lat=&lon=&name=` + save `cuaca:loc` |
+| `routes/market/` | `/market` | `+page.server.ts` + `+page.svelte` | **Market (HIDDEN dari BottomNav)**: tabel Saham/Forex + Crypto Top 5, reuse `market:ticker`, badge 24h, sparkline, filter/sort |
+| `routes/market/[symbol]/` | `/market/:symbol` | `+page.server.ts` + `+page.svelte` | Detail symbol + sparkline |
+| `routes/tentang/` | `/tentang` | `+page.svelte` static | 5 card — Apa ini / 3 Fitur / Teknologi / Sumber Data / Versi |
+| `routes/media/[source]/` | `/media/:source` | `+page.server.ts` | List 50 artikel 1 media + load-more +10 |
+| `routes/baca/` | `/baca?source=&u=&id=` | `+page.server.ts` | Detail: `u` primary → `id` fallback → pool kategori; `more` 3 artikel |
+| `routes/cari/` | `/cari?q=` | `+page.server.ts` | Search pool 100/media, max 50, `s-maxage=120` |
+| `routes/simpan/` | `/simpan` | `+page.svelte` | Bookmarks localStorage snapshot, inline `ArticleView` |
+| `routes/api/source/[id]/` | `GET /api/source/:id?force=1` | `+server.ts` | Retry per-section; `force=1` → `invalidateCache` |
 
 ## Layout
 
-`+layout.svelte` — wrapper `max-w-[420px]` putih di atas backdrop abu; sticky Header; **MarketTicker** global di bawah Header (`data.market` dari `+layout.server.ts`); `main` dengan `pb-[calc(56px+safe-area)]`; render `<Footer/>` + `<BottomNav>` fixed 3 tab.
-`+layout.server.ts` — load `market: MarketData \| null` via `fetchMarketData()` (try/catch, tidak jatuhkan layout), header `s-maxage=600`.
+`+layout.svelte` — wrapper `max-w-[420px]` putih di backdrop abu; sticky `Header`; **MarketTicker** conditional `{#if data?.market}` di bawah Header; `main pb-[calc(56px+safe-area)]`; `Footer` hide di `/cuaca` (`isCuaca` dari `page.url.pathname`); `BottomNav` fixed 3 tab (`Berita|Cuaca|Tentang`, `cuacaHref` dinamis dari `localStorage`).
+`+layout.server.ts` — load `market: MarketData | null` via `fetchMarketData()` (try/catch), header `s-maxage=600` (cuaca reuse tanpa set ulang).
 
 ## Konvensi
 
-- Load function selalu kirim `fetchedAt` + header `Cache-Control: s-maxage=600` (ditampilkan di Header sebagai "Diperbarui X lalu")
-- Direktif Svelte 5 runes: `$props()`, `$state`, `$derived`, `$effect`, `onclick={}`
-- Navigasi: `history.back()` di Header dengan fallback `location.href='/'`; invalidasi via `invalidateAll()`
-- Detail lebih dari pool umum dicari di pool kategori untuk menghindari 404 (lihat `baca/+page.server.ts`)
+- Load berita & cuaca pakai `Promise.allSettled` + tanpa `setHeaders` double (s-maxage via layout)
+- `cache-control: public, s-maxage=600, stale-while-revalidate=1800` (layout) + cuaca `cached` TTL split
+- Svelte 5 runes: `$props()`, `$state`, `$derived`, `$effect`, `onclick={}`
+- Cuaca persist: `localStorage 'cuaca:loc'` dibaca `BottomNav` + `/cuaca` (goto replaceState)
+- Detail lebih dari pool umum dicari di pool kategori (baca)
 
 ## Menambah halaman baru
 
 ```bash
 mkdir -p src/routes/contoh
-# src/routes/contoh/+page.server.ts
+# +page.server.ts
 export const load: PageServerLoad = async () => ({ hello: 'world' });
-# src/routes/contoh/+page.svelte
+# +page.svelte
 <script lang="ts"> let { data } = $props(); </script>
 <p>{data.hello}</p>
 ```
-
-Jangan lupa tambahkan link navigasi jika perlu.
