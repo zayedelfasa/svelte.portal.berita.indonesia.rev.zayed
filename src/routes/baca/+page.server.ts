@@ -9,7 +9,7 @@ import type { PageServerLoad } from './$types';
  * Pencarian primary via `u` (stabil lintas pool kategori), fallback `id`.
  * Jika tidak ada di pool headline, telusuri pool kategori sumber itu (Fase C anti-404).
  */
-export const load: PageServerLoad = async ({ url, setHeaders }) => {
+export const load: PageServerLoad = async ({ url }) => {
 	const sourceId = url.searchParams.get('source') ?? '';
 	const idx = Number(url.searchParams.get('id'));
 	const u = url.searchParams.get('u');
@@ -36,7 +36,6 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 
 	if (!article) error(404, 'Berita tidak ditemukan');
 
-	setHeaders({ 'cache-control': 'public, s-maxage=600, stale-while-revalidate=1800' });
 	return {
 		article,
 		sourceName: source.name,

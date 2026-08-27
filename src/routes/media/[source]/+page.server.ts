@@ -4,14 +4,12 @@ import type { PageServerLoad } from './$types';
 
 const PAGE_SIZE = 10;
 
-export const load: PageServerLoad = async ({ params, setHeaders }) => {
+export const load: PageServerLoad = async ({ params }) => {
 	const source = SOURCES.find((s) => s.id === params.source);
 	if (!source) error(404, 'Media tidak dikenal');
 
 	const articles = await source.fetchTop(50).catch(() => []);
 	const fetchedAt = new Date().toISOString();
-
-	setHeaders({ 'cache-control': 'public, s-maxage=600, stale-while-revalidate=1800' });
 
 	return {
 		sourceId: source.id,

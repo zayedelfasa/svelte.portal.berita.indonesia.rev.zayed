@@ -4,8 +4,11 @@
 	import type { Article } from '$lib/types';
 	import { bookmarks, isBookmarked, toggleBookmark } from '$lib/utils/bookmarks.svelte';
 	import { thumbState } from '$lib/utils/settings.svelte';
+	import { tagArticle } from '$lib/marketTag';
 
-	let { article, index }: { article: Article; index: number } = $props();
+	let { article, index, marketPool = [] as { symbol: string }[] }: { article: Article; index: number; marketPool?: { symbol: string }[] } = $props();
+
+	const tags = $derived(tagArticle(article, marketPool));
 
 	const label = $derived(timeAgo(article.publishedAt, clock.now));
 	const fresh = $derived(isNew(article.publishedAt, clock.now));
@@ -36,6 +39,14 @@
 			<span>{label}</span>
 		</p>
 	</a>
+
+	{#if tags.length > 0}
+		<div class="mt-1 flex flex-wrap gap-1">
+			{#each tags as t (t.symbol)}
+				<a href="/market/{t.slug}" class="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">{t.symbol}</a>
+			{/each}
+		</div>
+	{/if}
 
 	{#if thumbState.enabled && article.image && !thumbBroken}
 		<a

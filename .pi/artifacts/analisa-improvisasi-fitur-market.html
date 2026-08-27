@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="artifact-kind" content="markdown">
+<meta name="artifact-generated" content="1787748042040">
+<meta name="artifact-project" content="/Volumes/samsung_apfs/svelte.portal.berita.indonesia">
+<title>Analisa &amp; Improvisasi Fitur Market</title>
+<style data-base>:root { color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1c1c1a;
+  --muted: #6b6862;
+  --border: #e7e5e0;
+  --code-bg: #f7f6f4;
+  --accent: #b95730;
+  --add-bg: #e9f7ee;
+  --add-word-bg: #c8ecd3;
+  --add-fg: #1a7f37;
+  --del-bg: #feeff1;
+  --del-word-bg: #f8d2d7;
+  --del-fg: #c93c4c;
+  --hl-comment: #6e7781;
+  --hl-keyword: #cf222e;
+  --hl-string: #0a3069;
+  --hl-number: #0550ae;
+  --hl-title: #8250df;
+  --hl-type: #953800;
+  --hl-attr: #0550ae;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #171614;
+  --fg: #e6e3de;
+  --muted: #94918a;
+  --border: #2e2d29;
+  --code-bg: #201f1c;
+  --accent: #d67858;
+  --add-bg: #1d2a20;
+  --add-word-bg: #2b4232;
+  --add-fg: #85c793;
+  --del-bg: #2e1c1e;
+  --del-word-bg: #4a292c;
+  --del-fg: #e28a91;
+  --hl-comment: #8b949e;
+  --hl-keyword: #ff7b72;
+  --hl-string: #a5d6ff;
+  --hl-number: #79c0ff;
+  --hl-title: #d2a8ff;
+  --hl-type: #ffa657;
+  --hl-attr: #79c0ff;
+} }
+
+* { box-sizing: border-box; }
+html { font-size: 15px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+article { max-width: 860px; margin: 0 auto; padding: 2.75rem 1.5rem 4rem; }
+h1, h2, h3, h4 { line-height: 1.3; letter-spacing: -0.01em; color: var(--fg); }
+h1 { font-size: 1.45rem; font-weight: 650; margin: 0 0 1rem; }
+h2 { font-size: 1.15rem; font-weight: 650; margin: 2.2em 0 .7em; padding-bottom: .35em; border-bottom: 1px solid var(--border); }
+h3 { font-size: 1rem; font-weight: 600; margin: 1.8em 0 .5em; }
+h4 { font-size: .9rem; font-weight: 600; margin: 1.5em 0 .4em; }
+p { margin: .8em 0; }
+a { color: var(--accent); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 2px; }
+a:hover { text-decoration-color: var(--accent); }
+strong { font-weight: 600; }
+ul, ol { margin: .8em 0; padding-left: 1.5em; }
+li { margin: .3em 0; }
+li > ul, li > ol { margin: .2em 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+img, svg, video { max-width: 100%; }
+::selection { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+
+blockquote {
+  margin: 1.2em 0;
+  padding: .1em 1.1em;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--muted);
+}
+blockquote > :first-child { margin-top: .4em; }
+blockquote > :last-child { margin-bottom: .4em; }
+
+table { border-collapse: collapse; width: 100%; margin: 1.2em 0; font-size: .9rem; }
+th {
+  text-align: left; font-weight: 600; font-size: .74rem;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  padding: .5em .75em; border-bottom: 1px solid var(--border);
+}
+td { padding: .55em .75em; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+
+code, kbd, samp { font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace; }
+code { font-size: .85em; background: var(--code-bg); padding: .15em .4em; border-radius: 4px; }
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  overflow-x: auto;
+  font-size: .82rem;
+  line-height: 1.55;
+  margin: 1.2em 0;
+}
+pre code { background: transparent; padding: 0; font-size: inherit; }
+
+input[type="checkbox"] { accent-color: var(--accent); margin-right: .4em; }
+
+
+.artifact-header {
+  display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap;
+  margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+}
+.artifact-header h1 { margin: 0; }
+.artifact-badge {
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace; font-size: .66rem; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px; padding: .2em .7em; white-space: nowrap;
+}
+.artifact-meta { margin-left: auto; color: var(--muted); font-size: .72rem; font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace; }
+.artifact-footer {
+  margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: .72rem; font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+}
+.artifact-mermaid { text-align: center; margin: 1.5rem 0; }
+</style>
+</head>
+<body>
+<article>
+<header class="artifact-header">
+<h1>Analisa &amp; Improvisasi Fitur Market</h1>
+<span class="artifact-badge">markdown</span>
+<span class="artifact-meta">2026-08-26 12:40:42</span>
+</header>
+<h1>Analisa &amp; Improvisasi Fitur Market — Portal Berita Indonesia</h1>
+<blockquote>
+<p>Branch <code>dev</code> — Phase 0 Done ✅ | Audit DOC_FITUR_MARKET_TENTANG.md (2026-01-04)</p>
+</blockquote>
+<h2>1. Health Check Sekarang</h2>
+<table>
+<thead>
+<tr>
+<th>Aspek</th>
+<th>Nilai</th>
+<th>Catatan</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Arsitektur</strong></td>
+<td>✅ Bagus</td>
+<td><code>cached(&#39;market:ticker&#39;)</code> + <code>s-maxage=600</code> reuse layout &amp; /market, hemat quota CoinGecko/Yahoo</td>
+</tr>
+<tr>
+<td><strong>Resiliensi</strong></td>
+<td>✅ Bagus</td>
+<td><code>Promise.allSettled</code> + dummy fallback IHSG/USDIDR, ticker tidak kosong</td>
+</tr>
+<tr>
+<td><strong>UI</strong></td>
+<td>⚠️ Minimal</td>
+<td>Ticker 80s marquee + tabel statis, belum interaktif</td>
+</tr>
+<tr>
+<td><strong>Data UX</strong></td>
+<td>⚠️ Lemah</td>
+<td>Hanya price + 24h%, no sparkline, no volume, LQ45 derived menyesatkan, USDT 0% noise</td>
+</tr>
+<tr>
+<td><strong>Retention</strong></td>
+<td>❌ Belum</td>
+<td>Tanpa watchlist/alert/portfolio = user lihat lalu pergi</td>
+</tr>
+</tbody></table>
+<p><strong>Kesimpulan:</strong> Fondasi server solid, butuh improvisasi di <strong>kredibilitas data + interaktivitas + retention</strong> sebelum Phase 3 berat.</p>
+<hr>
+<h2>2. Gap di Dokumen Phase 1-3</h2>
+<p>Roadmap doc sudah matang (0 API key, cache TTL), tapi ada blind spot:</p>
+<ol>
+<li><strong>LQ45 Bohong</strong> — <code>IHSG*0.135</code> tidak akurat, risk komplain. Mending label <code>LQ45* (estimasi)</code> atau ganti ke <code>IDX30</code> yang ada di Yahoo (<code>^JKSE</code> family) atau hide jika fail.</li>
+<li><strong>TTL 10m seragam</strong> — Crypto volatil butuh 2m, IHSG cukup 10m. Samakan = crypto telat, IDX boros.</li>
+<li><strong>Yahoo 403 makin sering</strong> — Doc hanya fallback dummy. Butuh fallback kedua: <code>api.kuarsa</code> / <code>Investing embed</code> / cache localStorage yesterday close.</li>
+<li><strong>USDT useless</strong> — <code>change 0.00%</code> penuhi ticker. Ganti dengan volume/total market cap atau hide badge.</li>
+<li><strong>Aksesibilitas ticker</strong> — <code>[...items,...items]</code> duplikat dibaca screen-reader 2x. Second loop harus <code>aria-hidden</code>.</li>
+<li><strong>Tidak ada stale indicator</strong> — <code>fetchedAt</code> cuma <code>timeAgo</code>, no &quot;data 45m lalu, mungkin kadaluarsa&quot; + retry button.</li>
+</ol>
+<hr>
+<h2>3. Rekomendasi Improvisasi (Beyond Doc)</h2>
+<h3>Tier S — Quick Win 0 API Baru (1 hari, kerjakan dulu)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Improvisasi</th>
+<th>Why</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>S1</strong></td>
+<td><strong>IDR Toggle Crypto</strong> <code>USD↔IDR</code></td>
+<td>Crypto <code>$64k</code> abstrak, <code>Rp 1.05M</code> relatable. Kurs = <code>USD/IDR</code> live. Toggle pill di <code>/market</code> + ticker.</td>
+<td><code>+10 baris</code></td>
+</tr>
+<tr>
+<td><strong>S2</strong></td>
+<td><strong>Sort &amp; ↑↓ Icon</strong> bukan warna doang</td>
+<td>Color-blind, red/green saja gagal. Tambah <code>▲▼</code> + <code>changeCls</code> sudah ada, tapi tambah <code>aria-label</code>. Tabel sortable tap header.</td>
+<td>Kecil</td>
+</tr>
+<tr>
+<td><strong>S3</strong></td>
+<td><strong>Tipe Badge &amp; Filter Chip</strong> `[Semua</td>
+<td>IDX</td>
+<td>Forex</td>
+</tr>
+<tr>
+<td><strong>S4</strong></td>
+<td><strong>Stale &amp; Retry</strong></td>
+<td>Jika <code>fetchedAt &gt; 30m</code>, banner kuning + tombol <code>Muat ulang /api/source/...?force=1</code>. Bangun trust.</td>
+<td>Kecil</td>
+</tr>
+<tr>
+<td><strong>S5</strong></td>
+<td><strong>Hide USDT badge / ganti Volume</strong></td>
+<td>USDT <code>0.01%</code> spam. Hide badge jika <code>symbol=USDT</code> atau tampilkan <code>Vol $xxB</code>.</td>
+<td>5 menit</td>
+</tr>
+</tbody></table>
+<h3>Tier A — Kredibilitas Data (2-3 hari)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Improvisasi</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A1</strong></td>
+<td><strong>Split Cache TTL</strong></td>
+<td><code>market:crypto 2m</code>, <code>market:idx 10m</code>, <code>market:forex 5m</code>. Hit <code>fetchCrypto()</code> &amp; <code>fetchIdxForex()</code> terpisah, jangan <code>Promise.all</code> satu TTL.</td>
+</tr>
+<tr>
+<td><strong>A2</strong></td>
+<td><strong>Yahoo Fallback Layer 2</strong></td>
+<td>Jika <code>fetchYahooItem</code> fail → coba <code>https://api.kuarsa.com/idx</code> (gratis) atau <code>Binance USDIDR</code> proxy. Jika semua fail → tampilkan <code>IHSG — tutup • last 7.234 (kemarin)</code>. Jangan dummy seolah live.</td>
+</tr>
+<tr>
+<td><strong>A3</strong></td>
+<td><strong>Sparkline tanpa API</strong></td>
+<td>Yahoo <code>range=7d</code> sudah include 7 titik close (di <code>chart.result[0].indicators.quote[0].close</code>). Render mini SVG 40×16 reuse data lama, belum butuh CoinGecko <code>sparkline=true</code>. Doc Phase 3.1 bisa dipercepat.</td>
+</tr>
+<tr>
+<td><strong>A4</strong></td>
+<td><strong>Disclaimer OJK Kuat</strong></td>
+<td>Footer note tambah: <code>Data delay 10m, bukan real-time trading. Keputusan investasi tanggung jawab Anda.</code> Hindari risiko hukum.</td>
+</tr>
+</tbody></table>
+<h3>Tier B — Retention (Pola <code>bookmarks.svelte.ts</code>) (3-5 hari)</h3>
+<blockquote>
+<p>Ini yang bikin user balik harian — align dengan <code>PLAN_FITUR_HARIAN.md</code></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Improvisasi</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>B1</strong></td>
+<td><strong>Watchlist + BottomNav Dot</strong></td>
+<td>Doc 2.1 sudah ada, improv: max 5 bukan 20 (mobile), long-press ticker → add. Sync <code>localStorage</code>, badge dot di BottomNav Market.</td>
+</tr>
+<tr>
+<td><strong>B2</strong></td>
+<td><strong>Sentimen Berita → Market</strong></td>
+<td>Auto-tag Phase 1.4 terlalu regex. Improve: hitung <code>keyword frequency</code> di pool berita 11 media (contoh <code>BBCA, IHSG, Bitcoin</code> muncul 7x hari ini → <code>🔥 Ramai dibahas</code>). Card kecil di <code>/market/[symbol]</code> &quot;7 berita terkait hari ini&quot;.</td>
+</tr>
+<tr>
+<td><strong>B3</strong></td>
+<td><strong>Perbandingan 7d Normalized</strong></td>
+<td>Toggle <code>Bandingkan: BTC vs IHSG vs USD/IDR</code> — normalisasi <code>(price/price_7d_ago -1)*100%</code> pakai Yahoo 7d + CoinGecko 7d. Insight &quot;Crypto naik saat IHSG flat&quot;.</td>
+</tr>
+<tr>
+<td><strong>B4</strong></td>
+<td><strong>Daily Brief Card</strong></td>
+<td>Jam 09:00 WIB (buka IDX) push card: `IHSG +0.85%</td>
+</tr>
+</tbody></table>
+<h3>Tier C — Advanced Tapi Gratis (Opsional)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Improvisasi</th>
+<th>Catatan</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>C1</strong></td>
+<td><strong>Fear &amp; Greed Gauge SVG</strong></td>
+<td>Doc 2.2 — jangan cuma angka <code>72 Greed</code>, buat gauge semi-circle <code>conic-gradient</code>, warna merah-hijau. Fallback hidden.</td>
+</tr>
+<tr>
+<td><strong>C2</strong></td>
+<td><strong>Kurs Lengkap + Emas Logam Mulia</strong></td>
+<td>Doc 2.3 — Emas jangan CoinGecko <code>gold</code> (XAU/USD). Ambil <code>https://api.metalpriceapi.com</code> free atau scrap Antam static + kurs <code>JPY/EUR/SGD</code>.</td>
+</tr>
+<tr>
+<td><strong>C3</strong></td>
+<td><strong>Alert Harga Local Only</strong></td>
+<td>Doc 3.5 — <code>setInterval 60s</code> boros. Ganti <code>Visibility API</code>: cek hanya saat tab active + <code>requestAnimationFrame</code>. <code>Notification</code> perlu permission — pakai in-app toast dulu.</td>
+</tr>
+<tr>
+<td><strong>C4</strong></td>
+<td><strong>Share Card Image</strong></td>
+<td>Canvas <code>html2canvas</code> generate card <code>BTC +2.3% • Portal Berita</code> untuk share WhatsApp story. Viral organik, 0 backend.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. Urutan Eksekusi Revisi</h2>
+<pre><code>Minggu 1: S1+S3+S5 (IDR toggle + filter + hide USDT) → A1 (split TTL) → A3 (sparkline Yahoo)
+Minggu 2: A2+A4 (fallback jujur + disclaimer) → B1 (watchlist 5)
+Minggu 3: B2+B4 (sentimen berita + daily brief) → baru Phase 1.1 TradingView detail</code></pre><blockquote>
+<p>Jangan langsung 1.1 TradingView — chart berat, iframe lambat di 420px. Selesaikan data jujur &amp; filter dulu, baru chart.</p>
+</blockquote>
+<hr>
+<h2>5. Checklist Teknis Sebelum Push</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <code>cached</code> split key <code>market:crypto</code> (2m) vs <code>market:idx</code> (10m)</li>
+<li><input disabled="" type="checkbox"> <code>MarketTicker.svelte</code> second loop <code>aria-hidden=&quot;true&quot;</code></li>
+<li><input disabled="" type="checkbox"> <code>fmtPrice</code> IDR/USDT konsisten, USDT hide badge</li>
+<li><input disabled="" type="checkbox"> LQ45 label <code>*estimasi</code> atau hide jika derived</li>
+<li><input disabled="" type="checkbox"> <code>+page.server.ts</code> <code>s-maxage</code> beda: ticker 120, market page 600</li>
+<li><input disabled="" type="checkbox"> <code>npm run check</code> 0 error + <code>npm run build</code> pass</li>
+</ul>
+<p><strong>Ref:</strong> <code>ARCHITECTURE.md</code> cache pattern, <code>AGENTS.md</code> §8 jangan import <code>lib/server</code> dari client.</p>
+
+<footer class="artifact-footer">source: /Volumes/samsung_apfs/svelte.portal.berita.indonesia</footer>
+</article>
+
+<script>
+(function () {
+  var slug = "analisa-improvisasi-fitur-market";
+  var es = new EventSource("/events");
+  es.addEventListener("reload", function (e) {
+    try { if (e.data === slug || e.data === "*") location.reload(); } catch (_) {}
+  });
+})();
+</script>
+</body>
+</html>

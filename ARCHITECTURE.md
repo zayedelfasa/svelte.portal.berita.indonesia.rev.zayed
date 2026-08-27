@@ -4,7 +4,7 @@
 
 ## Ringkasan
 
-Portal agregator berita 11 media lokal Indonesia. SvelteKit 2 (Svelte 5 runes) + Tailwind CSS v4, deploy target Vercel.
+Portal agregator berita 11 media + Cuaca & Polusi (Open-Meteo) + Market Saham & Crypto (hidden). SvelteKit 2 (Svelte 5 runes) + Tailwind CSS v4, Vercel, 3 tab BottomNav (Berita|Cuaca|Tentang), MarketTicker conditional.
 
 ```
 Browser
@@ -12,72 +12,72 @@ Browser
    ▼
 Vercel CDN (s-maxage=600)
    │
-SvelteKit server (+page.server.ts / +server.ts)
+SvelteKit server (+layout.server.ts + +page.server.ts / +server.ts)
    │  Promise.allSettled paralel
-   ▼
-lib/server/sources/*  ──►  lib/server/cache.ts (memori, TTL 10 menit)
-   │                            ▲
-   ├─ RSS resmi ────────────────┤
-   └─ aggregator berita-indo-api┘
+   ├── lib/server/sources/*  ──►  lib/server/cache.ts (TTL split)
+   │       ├─ RSS resmi ────────────────┤
+   │       └─ aggregator berita-indo-api┘
+   │                                    │
+   │       Upstream media (detik.com, ...)
    │
-Upstream media (detik.com, cnnindonesia.com, antaranews.com, ...)
+   ├── lib/server/market.ts ──► cached('market:ticker') hidden
+   │       ├─ CoinGecko API (BTC/ETH/...)
+   │       └─ TwelveData + exchangerate.host (Forex, IDX tunda)
+   │
+   └── lib/server/weather.ts ──► cached('weather:*')
+           ├─ api.open-meteo.com/v1/forecast (current+daily+hourly)
+           ├─ air-quality-api.open-meteo.com (AQI/PM2.5/PM10)
+           ├─ geocoding-api.open-meteo.com/v1/search (search kota)
+           └─ geocoding-api.open-meteo.com/v1/reverse (nama kota)
 ```
 
 ## Alur Data
 
-1. Browser meminta `/` → `routes/+page.server.ts`
-2. Load function memanggil `fetchTop(3)` untuk tiap media **secara paralel** (`Promise.allSettled`) — satu sumber gagal tidak menjatuhkan halaman
-3. Adapter (`lib/server/sources/*`) mengecek cache memori; kalau hangus → fetch upstream → normalisasi ke `Article`
-4. Hasil ternormalisasi dikirim ke `+page.svelte` sebagai props — browser tidak pernah menyentuh upstream langsung (bebas CORS)
-5. Response di-cache CDN via header `Cache-Control: s-maxage=600`
+1. `/` → `+layout.server.ts` load **MarketData** conditional + `+page.server.ts` load berita `fetchTop(3)` paralel `Promise.allSettled`
+2. `/cuaca?lat=&lon=&name=` → `+page.server.ts` `Promise.allSettled([fetchWeather, fetchAirQuality, reverseGeocode])` → props `{weather, airQuality, cityName}`; fallback Jakarta -6.2088,106.8456; `localStorage 'cuaca:loc'` persist + `BottomNav` href dinamis, auto-restore
+3. `/cuaca/cari?q=` → `searchCity(q)` 5 hasil → pick → `goto('/cuaca?lat=&lon=&name=')` + save loc; debounce 300ms
+4. Adapter `lib/server/sources/*` cek `cached` → `fetchWithTimeout(7-8s)` → normalisasi `Article`
+5. Layout render `<MarketTicker {#if data?.market && !isCuaca && !isTentang}>` (hide di `/cuaca` & `/tentang`/`/about`) + `<BottomNav Berita|Cuaca|Tentang>` + `Footer` hide di `/cuaca` & `/tentang`
+6. CDN `s-maxage=600` (layout set header, cuaca reuse tanpa double)
 
 ## Pola Kunci
 
 ### Normalisasi Article
-Semua sumber (RSS XML maupun JSON aggregator) dilewatakan menjadi satu bentuk:
 ```ts
-interface Article {
-  source: string;      // id media
-  title: string;
-  url: string;
-  publishedAt: string; // ISO
-  summary: string;     // HTML di-strip
-  image?: string;      // enclosure/image
-}
+interface Article { source, title, url, publishedAt: ISO, summary, image? }
+interface WeatherData { current: {temp, feelsLike, humidity, wind, code}, daily: [7], hourly: [24] }
+interface AirQualityData { us_aqi, pm2_5, pm10, category }
 ```
 
 ### Adapter factory
-- `makeRssSource(id, feedUrl, categories?)` — parse XML via fast-xml-parser
-- `makeAggregatorSource(id, apiPath, { fallbackFeed?, categories? })` — JSON dari berita-indo-api, fallback ke RSS bila mati
-- Keduanya mengembalikan `{ fetchTop, fetchCategory?, supportedCategories? }`
+- `makeRssSource` / `makeAggregatorSource` → `{ fetchTop, fetchCategory?, supportedCategories? }`
 
 ### Cache key convention
-| Key | Isi |
+| Key | TTL | Isi |
 |---|---|
-| `rss:{id}` / `agg:{id}` | pool headline |
-| `rss:{id}:{cat}` / `agg:{id}:{cat}` | pool kategori |
-Kategori yang URL/path-nya sama dengan headline otomatis reuse key headline (dedup).
+| `rss:{id}` / `agg:{id}` | headline |
+| `market:ticker` | MarketData (crypto 2m, idx 15m, forex 10m) |
+| `weather:current:{lat,lon}` | WeatherData (10m) |
+| `weather:air:{lat,lon}` | AirQualityData (10m) |
+| `weather:geo:{q}` | search 5 kota (1j) |
+| `weather:reverse:{lat,lon}` | nama kota (1d) |
 
 ### Multi-pool lookup di `/baca`
-Artikel bisa datang dari pool kategori yang tidak ada di pool headline. Detail page mencari: match `u=` (URL asli) dulu → fallback `id=` → lalu telusuri seluruh pool kategori sumber tersebut.
+`u=` primary → `id` fallback → telusuri pool kategori.
+
+### Cuaca persist
+`localStorage 'cuaca:loc' = {lat,lon,name}` dibaca `BottomNav` (href dinamis) + `/cuaca` (onMount auto `goto` jika tanpa param) + `/cuaca/cari` (pick save). Geolocation `navigator.geolocation` → `goto` + save.
 
 ## Peta Folder
 
 | Folder | Fungsi | README |
 |---|---|---|
-| `src/lib/components/` | Komponen UI Svelte | [README](src/lib/components/README.md) |
+| `src/lib/components/` | UI Svelte (WeatherCard, AirQualityCard, ForecastStrip, BottomNav, MarketTicker) | [README](src/lib/components/README.md) |
 | `src/lib/config/` | Registry 11 media | [README](src/lib/config/README.md) |
-| `src/lib/server/` | Fetch & cache server-side only | [README](src/lib/server/README.md) |
+| `src/lib/server/` | Fetch & cache server-only (market.ts, weather.ts, cache.ts) | [README](src/lib/server/README.md) |
 | `src/lib/server/sources/` | Adapter per media | [README](src/lib/server/sources/README.md) |
-| `src/lib/utils/` | State global runes (.svelte.ts) + helper | [README](src/lib/utils/README.md) |
-| `src/routes/` | File-based routing | [README](src/routes/README.md) |
+| `src/lib/utils/` | State runes + helper (clock, bookmarks, settings, url) | [README](src/lib/utils/README.md) |
+| `src/routes/` | Routing (`/`, `/cuaca`, `/cuaca/cari`, `/market` hidden, `/tentang`) | [README](src/routes/README.md) |
 | `static/` | Aset publik + icon PWA | [README](static/README.md) |
 
-File loose di `src/lib/`: `types.ts` (interface inti), `time.ts` (`timeAgo`, `isNew`), `categories.ts` (6 kategori kanonik).
-
-## Riwayat Pengembangan
-- `PLAN.md` — plan awal + riset endpoint
-- `PLAN_TIER_1.md` — badge BARU, pencarian, tab kategori
-- `PLAN_TIER_2.md` — skeleton, retry, share, OG meta, filter sumber, dark mode
-- `PLAN_TIER_3.md` — bookmark, thumbnail, ticker, PWA
-- `PLAN_BUGFIX_TIER{1,2,3}.md` — perbaikan pasca-review tiap tier
+Loose: `src/lib/types.ts` (`Article`), `src/lib/weatherCode.ts` (WMO mapping), `src/lib/time.ts` (`timeAgo`), `src/lib/categories.ts`.
