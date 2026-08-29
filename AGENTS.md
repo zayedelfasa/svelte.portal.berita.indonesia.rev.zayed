@@ -7,9 +7,11 @@
 
 Portal **agregator berita + market + cuaca** lokal Indonesia. Mobile-first `max-w-[420px]` (mirip app native), deploy **Vercel**.
 - **11 media**: Detik, CNN Indonesia, Antara, CNBC Indonesia, Tempo, Republika, Okezone, Kumparan, JPNN, Media Indonesia, iNews (3 berita teratas/media).
-- **Market — TUNDA (2026-08-27)**: IHSG, LQ45, USD/IDR (Yahoo Finance) + BTC/ETH/SOL/BNB/USDT (CoinGecko) — gratis tanpa API key. Route `/market` tetap ada tapi **hidden dari BottomNav** (Yahoo 403, TwelveData 404, idx.co.id Cloudflare block, GoAPI paid). No dummy — empty jujur + stale cache 24j.
-- **Cuaca — FOKUS AKTIF**: Suhu + forecast 7 hari + per jam + polusi AQI/PM2.5 via **Open-Meteo** gratis tanpa key (Weather + Air Quality + Geocoding).
-- **3 tab aktif** via BottomNav: `Berita /` · `Cuaca /cuaca` · `Tentang /tentang` (Market hidden, bukan hapus).
+- **Fitur Harian — PRIORITAS #1**: Sholat, Daily Briefing, Gempa BMKG, Harga Harian, Kalender, Skor Bola. Ikuti `docs/PLAN_FITUR_HARIAN.md`.
+- **Fitur Wanita — PRIORITAS #2**: Resep, Kalender Haid private/localStorage, Drakor/Hiburan. Ikuti `docs/PLAN_FITUR_WANITA.md`.
+- **Cuaca — DONE**: Suhu + forecast 7 hari + per jam + polusi AQI/PM2.5 via **Open-Meteo** gratis tanpa key.
+- **Market — PRIORITAS #3**: Fokus TradingView widget/embed read-only. Jangan kembangkan provider custom Yahoo/TwelveData/IDX atau data market dummy. Ikuti `docs/PLAN_MARKET_TRADINGVIEW.md`.
+- **3 tab aktif** via BottomNav tetap `Berita /` · `Cuaca /cuaca` · `Tentang /tentang` sampai ada keputusan navigasi baru.
 
 **Goal bisnis:** Satu tempat baca headline 11 media + pantau cuaca/polusi harian + market (saat provider ready). Bukan full trading app, bukan scrape isi penuh — klik judul → situs asli. **Bukan rekomendasi investasi.**
 
@@ -50,8 +52,10 @@ npm run check        # svelte-kit sync + svelte-check (harus 0 error)
 │   ├── DOC_FITUR_MARKET_TENTANG.md   # detail ticker + BottomNav + /market + /tentang + roadmap Phase 0-3
 │   ├── DOC_JANGAN_GUNAKAN_DUMMY.md   # kebijakan no-dummy market
 │   ├── CHANGELOG.md                  # log lintas fitur (single source)
-│   ├── PLAN_CUACA.md                 # tab Cuaca & Polusi (Open-Meteo) — FOKUS AKTIF
-│   └── PLAN_FITUR_HARIAN.md          # fitur daily habit (Sholat, Briefing, Gempa...)
+│   ├── PLAN_CUACA.md                 # tab Cuaca & Polusi (Open-Meteo) — DONE
+│   ├── PLAN_FITUR_HARIAN.md          # daily habit umum — baca
+│   ├── PLAN_FITUR_WANITA.md          # Resep, Kalender Haid, Drakor/Hiburan — baca
+│   └── PLAN_MARKET_TRADINGVIEW.md    # Market TradingView read-only — baca
 ├── package.json, vite.config.ts, svelte.config.js
 ├── src/
 │   ├── app.html, app.css, app.d.ts
@@ -169,7 +173,7 @@ interface AirQualityData { us_aqi, pm2_5, pm10, category: 'Baik'|'Sedang'|... }
 **Done (CHANGELOG 2026-01-05 & 2026-08-26):**
 - Market Phase 0 + Phase 1: ticker global + `/market` + `/market/[symbol]` + gainer/loser + trending + kalkulator + auto-tag + filter/sort + sparkline (build pass, `svelte-check 0`)
 - No-dummy policy: `DOC_JANGAN_GUNAKAN_DUMMY.md`, cache split, peekCache, empty jujur
-- README 5 folder + `ARCHITECTURE.md` + `DOC_FITUR_MARKET_TENTANG.md` + `PLAN_CUACA.md` + `PLAN_FITUR_HARIAN.md`
+- README 5 folder + `ARCHITECTURE.md` + semua plan fitur
 
 **Done (2026-08-27) — PLAN_CUACA Phase C1/C2:**
 - `weather.ts` + `weatherCode.ts` + `cache` weather/geo/reverse + `/cuaca` + `/cuaca/cari` + `WeatherCard`/`AirQualityCard`/`ForecastStrip` → Open-Meteo gratis, `check 0` `build pass`
@@ -177,22 +181,35 @@ interface AirQualityData { us_aqi, pm2_5, pm10, category: 'Baik'|'Sedang'|... }
 - Persist lokasi `localStorage 'cuaca:loc'` → `BottomNav` href dinamis + auto-restore → pindah Berita → balik Cuaca tetap lokasi terakhir
 - 7 issues (#1-#7) closed
 
-**Tunda (2026-08-27):**
-- Market IDX ditunda — Yahoo 403, TwelveData 404, idx.co.id CF block, GoAPI paid → `BottomNav` Market OFF → `Berita|Cuaca|Tentang`, `MarketTicker` conditional `{#if data?.market}`, route `/market` tetap ada
+**Status prioritas eksekusi:**
+1. **Fitur Harian** — Sholat → Daily Briefing → Gempa → Harga → Kalender → Skor Bola. Baca `docs/PLAN_FITUR_HARIAN.md` sebelum implementasi.
+2. **Fitur Wanita** — Resep → Kalender Haid private/localStorage → Drakor/Hiburan. Baca `docs/PLAN_FITUR_WANITA.md` sebelum implementasi.
+3. **Market TradingView** — widget/embed read-only saja. Baca `docs/PLAN_MARKET_TRADINGVIEW.md`. Jangan kembali ke Yahoo/TwelveData/custom market fetch.
 
-**Next:**
-- `PLAN_FITUR_HARIAN.md` (Sholat, Briefing 07:00, Gempa BMKG — habit harian)
-- Monetisasi QRIS Footer masih placeholder
+Market custom lama tetap route legacy sampai migrasi TradingView selesai. No dummy.
+Monetisasi QRIS Footer masih placeholder.
 
 ## 10. Cara Lanjut Sesi Baru
 
-1. Baca `AGENTS.md` (ini) → `ARCHITECTURE.md` → `docs/CHANGELOG.md` → `docs/PLAN_CUACA.md` (fokus aktif) → `DOC_FITUR_MARKET_TENTANG.md` jika sentuh market → `PLAN_FITUR_HARIAN.md` untuk habit.
+1. Baca `AGENTS.md` (ini) → `ARCHITECTURE.md` → `docs/CHANGELOG.md` → semua `docs/PLAN*.md` → `docs/DOC*.md` relevan scope → README folder target. Jangan asumsi plan belum ada; cek seluruh `docs/`.
 2. `git status` + `git branch` (pastikan di `dev`).
 3. `npm run check` sebelum ubah apa pun.
 4. Tanya user mau fitur apa — jangan asumsi. Jika butuh API baru, cek gratis dulu (Open-Meteo untuk cuaca, CoinGecko/Yahoo untuk market — no paid key).
 5. Setelah ubah: `npm run check` + `npm run build` → ringkas file yang diubah.
 
-## 11. Pitfalls
+## 11. Protokol Baca Markdown
+
+Sebelum ubah kode:
+
+1. Baca `AGENTS.md`, `ARCHITECTURE.md`, `docs/CHANGELOG.md`.
+2. Daftar semua `docs/PLAN*.md` dan baca plan relevan.
+3. Daftar semua `docs/DOC*.md` dan baca dokumen relevan.
+4. Baca README folder target.
+5. Jika plan baru muncul, update daftar referensi ini.
+
+Perintah cek: `find docs -maxdepth 1 -type f -name '*.md' -print`.
+
+## 12. Pitfalls
 
 - Yahoo 403 → **no dummy** — coba `query2` → `exchangerate.host` → stale cache 24j → empty jujur + `Muat ulang`, jangan hardcode `IHSG 7234`.
 - CoinGecko 429 → cache split 2m + CDN `s-maxage=600`, jangan polling client.
