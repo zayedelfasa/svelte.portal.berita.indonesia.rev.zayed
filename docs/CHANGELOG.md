@@ -282,6 +282,15 @@ Status: **NEXT** — Yahoo HAPUS total (403 kurang bagus)
 - Belum ada commit baru setelah pekerjaan ini.
 - Belum push ke remote branch.
 
+## 2026-08-29 — Dokumentasi Remote Deployment Vercel
+
+- Vercel deployment memakai `github.com/zayedelfasa/newsaggregate`.
+- Repository source tetap `github.com/zayedelfasa/svelte.portal.berita.indonesia.rev.zayed` pada remote `origin`.
+- Ditambahkan remote `vercel` sebagai target deployment Opsi B.
+- Preview: `git push -u vercel dev`.
+- Production: `git push vercel dev:main` setelah `npm run check` dan `npm run build` pass.
+- Tidak ada perubahan kode aplikasi.
+
 ## Catatan Verifikasi Manual
 
 1. Buka `/market`.

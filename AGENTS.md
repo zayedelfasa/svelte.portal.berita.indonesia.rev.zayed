@@ -40,6 +40,36 @@ npm run check        # svelte-kit sync + svelte-check (harus 0 error)
 
 **Branch aktif:** `dev` (tracking `origin/dev`). `main` = stabil. Jangan push langsung ke `main`.
 
+### Deployment Vercel
+
+Vercel saat ini deploy dari repository berbeda:
+
+```text
+Vercel repo: github.com/zayedelfasa/newsaggregate
+Source repo: github.com/zayedelfasa/svelte.portal.berita.indonesia.rev.zayed
+```
+
+Gunakan remote tambahan `vercel`; jangan ganti atau hapus `origin`:
+
+```bash
+git remote add vercel git@github.com:zayedelfasa/newsaggregate.git
+git remote -v
+```
+
+Push preview dari branch `dev`:
+
+```bash
+git push -u vercel dev
+```
+
+Push production hanya jika memang diperlukan dan branch Vercel memakai `main`:
+
+```bash
+git push vercel dev:main
+```
+
+`origin/dev` tidak memicu deployment repository `newsaggregate`. Perintah `dev:main` mengubah branch production; jalankan sengaja setelah `npm run check` dan `npm run build` pass.
+
 ## 4. Struktur Project
 
 ```

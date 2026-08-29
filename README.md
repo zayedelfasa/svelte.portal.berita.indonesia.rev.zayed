@@ -47,3 +47,21 @@ npm run check        # svelte-check 0 error
 - Halaman `/cuaca` → `?lat=&lon=&name=` default Jakarta, geolocation + search kota `/cuaca/cari`; `/market` hidden; `/baca?source=X&id=Y&u=...` detail; `/tentang` static — lihat [`src/routes/README.md`](src/routes/README.md).
 
 Detail lengkap: lihat [`docs/PLAN.md`](docs/PLAN.md). Docs lain: [`docs/PLAN_CUACA.md`](docs/PLAN_CUACA.md) (Cuaca+Polusi, Done C1/C2) · [`docs/PLAN_FITUR_HARIAN.md`](docs/PLAN_FITUR_HARIAN.md) (daily habit) · [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
+
+## Deployment Vercel
+
+Vercel memakai repository `zayedelfasa/newsaggregate`, bukan `origin` source repository ini. Tambahkan remote deployment lalu push branch `dev`:
+
+```bash
+git remote add vercel git@github.com:zayedelfasa/newsaggregate.git
+git push -u vercel dev
+```
+
+Untuk production, hanya setelah validasi:
+
+```bash
+npm run check && npm run build
+git push vercel dev:main
+```
+
+Detail aturan deployment ada di [`AGENTS.md`](AGENTS.md).
