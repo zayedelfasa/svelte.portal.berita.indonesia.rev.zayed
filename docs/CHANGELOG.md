@@ -282,6 +282,66 @@ Status: **NEXT** — Yahoo HAPUS total (403 kurang bagus)
 - Belum ada commit baru setelah pekerjaan ini.
 - Belum push ke remote branch.
 
+## 2026-08-31 — Bola 7 liga + Timeline Opsi C + Logo + Week View
+
+- `BolaMatch` tambah `homeLogo/awayLogo`; `parsers.ts` `parseTheSportsDb` (TheSportsDB 4790 Liga 1) + ESPN `team.logo`.
+- `bola.ts` expand `LEAGUES` 1→7 (Liga 1 `idn.1` fallback DB + EPL/LaLiga/SerieA/Bundesliga/Ligue1/UCL), ESPN WAF fix UA `axios/1.7.0` (Mozilla 403), `fetchBola({week})` 7 hari Mon-Sun `?dates=YYYYMMDD`, dedup `Map`, cache `bola:scoreboard` + `bola:scoreboard:week` TTL 5m.
+- Widget `KalenderBolaCard` + detail `harian/bola` ganti ke timeline `jam kiri 52px | divider | logo stack + skor | LIVE/FT` — `py-3 gap-3 rounded-xl`, `space-y-2` lega, `onerror hide`, dark fix `text-gray-900 dark:text-neutral-100`.
+- Detail tambah chip liga `Semua|Liga 1|...` + toggle `Hari Ini | Minggu Ini` + group per hari, preserve `?liga=&week=&force`.
+- Validasi: `check 0`, `build pass`, preview `200` harian/bola + `?week=1`.
+
+## 2026-08-31 — QA Fitur Harian: Reload, Timeout, Cache Header, Parser Test
+
+- Detail route `/harian/{briefing,gempa,harga,bola}` tambah link `↻ Muat ulang` → `?force=1`.
+- `force=1` invalidasi cache fitur terkait; layout kirim `cache-control: no-store, no-cache, must-revalidate` → bypass CDN.
+- Normal page tetap `public, s-maxage=600, stale-while-revalidate=1800`; smoke test 5 route = header benar; force route = `no-store`.
+- Audit timeout: semua API Harian eksplisit 7000ms via `fetchWithTimeout`; AbortController timer cleanup diuji.
+- Fix fallback `/baca`: briefing item simpan `sourceIndex` sebelum sort/dedup; link tidak lagi pakai index global.
+- Extract pure parser `src/lib/server/parsers.ts`: `parseBmkgGempa`, `parseEspnScoreboard`, `parsePaxgPrice`, `parsePanganPrice`.
+- Tambah Vitest: `src/lib/server/__tests__/parsers.test.ts` + `http.test.ts`; `npm test` = 8 tests pass.
+- Validasi akhir: `npm run check` 0 error/0 warning; `npm test` 8 pass; `npm run build` pass.
+
+## 2026-08-31 — Fitur Harian: Tab `/harian` (5 fitur 1 tab) + 4 Detail Route
+
+Branch kerja: `dev`
+
+### Navigasi
+- BottomNav 3 → 4 tab: `Berita | Cuaca | Harian | Tentang` (ikon kalender-check)
+- `+layout.svelte` — MarketTicker + Footer hide di `/harian` (fokus info harian)
+
+### Server Baru (semua gratis tanpa key, cached, allSettled)
+- `briefing.ts` — reuse pool berita 11 media (`fetchTop` cached), dedup judul, 10 teratas. TTL 10m
+- `gempa.ts` — BMKG autogempa + gempaterkini digabung dedup, sort terbaru. TTL 5m
+- `harga.ts` — Emas via CoinGecko PAXG (IDR, per-gram, label `est`), Sembako `pangan.go.id` (sering timeout → null jujur), BBM statis resmi Pertamina. TTL 6j
+- `kalender.ts` — Hijriah Aladhan `gToH` (301 → follow) + libur Nager.Date `publicholidays/{tahun}/ID`, terdekat ≤30 hari. TTL 12j/24j
+- `bola.ts` — ESPN scoreboard `eng.1` (EPL), parse live/finished/scheduled. TTL 5m
+- `cache.ts` — TTL baru: `gempa`, `bola` 5m; `harga` 6j; `hijri` 12j; `libur` 24j
+- `harian.ts` — types shared (BriefingData, GempaData, HargaData, KalenderData, BolaData)
+
+### Komponen
+- `BriefingCard.svelte` — 3 bullet + badge media + Web Speech `id-ID` (toggle 🔊/⏹, cancel saat unmount)
+- `GempaCard.svelte` — banner merah M≥5 <24j (border-l-red-500) / strip tipis kecil / hidden gagal; link peta Google Maps
+- `HargaCard.svelte` — ringkas emas+2 sembako+BBM, arrow change, badge `est`
+- `KalenderBolaCard.svelte` — Masehi+Hijriah+badge libur; live score pulse (maks 3, hidden jika kosong)
+
+### Route
+- `/harian` — widget stack + empty-state jujur jika semua gagal
+- `/harian/briefing` — 10 berita + tombol 🔊 per item
+- `/harian/gempa` — list + chip filter `Semua / M≥5` + link peta
+- `/harian/harga` — tabel 3 grup + disclaimer per grup + badge `est`
+- `/harian/bola` — 3 section Live/Selesai/Jadwal (Svelte 5 snippet `MatchRow`)
+
+### Riset Endpoint (catatan penting)
+- `dayoffapi.vercel.app` + `api-harilibur.vercel.app` mati (402 deployment disabled) → pakai Nager.Date (aktif, gratis, data ID lengkap)
+- Aladhan `gToH` redirect 301 → fetch perlu follow (fetchWithTimeout sudah `redirect: 'follow'`)
+- `pangan.go.id` timeout dari server ini → sembako tampil `tidak tersedia` (no dummy)
+- BMKG kadang 403 per-endpoint → allSettled 2 endpoint, satu sukses cukup
+
+### Validasi
+- `npm run check` 0 error 0 warning, `npm run build` pass
+- Preview 200 semua route baru + home/cuaca/tentang regressi OK
+- Gempa 15+ item BMKG tampil, briefing 10 berita lintas media, Hijriah `18 Rabiul Awal 1448 H`, jadwal EPL kickoff WIB, emas est + sembako jujur tidak tersedia
+
 ## 2026-08-29 — Dokumentasi Remote Deployment Vercel
 
 - Vercel deployment memakai `github.com/zayedelfasa/newsaggregate`.

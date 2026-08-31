@@ -1,7 +1,7 @@
 # PLAN_FITUR_HARIAN.md — Fitur Agar Dibuka Tiap Hari
 
-> Branch `dev` — 2026-01-04
-> Status: **Planned** — belum dikerjakan
+> Branch `dev` — 2026-01-04 → 2026-08-31
+> Status: **DONE** — 5 fitur selesai (Sholat dihapus)
 > Referensi: `../AGENTS.md`, `../ARCHITECTURE.md`, `DOC_FITUR_MARKET_TENTANG.md`, `PLAN_CUACA.md`
 > Goal: tambah **habit trigger harian** biar bukan cuma dibuka pas ada berita viral. Target: user buka 1-2x/hari karena rutinitas.
 
@@ -16,62 +16,25 @@
 | Cuaca+Polusi (planned) | Pagi mau berangkat | 1x/hari (cepat bosan) |
 | Tentang | Sekali lihat | Jarang |
 
-**Habit = rutinitas, bukan penasaran.** Butuh fitur yang dicek karena **waktu** (sholat), **pagi** (briefing), **FOMO** (gempa).
+**Habit = rutinitas, bukan penasaran.** Butuh fitur yang dicek karena **pagi** (briefing), **FOMO** (gempa), **pagi** (harga).
 
 ### Prioritas (Effort vs Retention)
 
 | Prioritas | Fitur | API Free | Effort | Retention | Kenapa |
 |-----------|-------|----------|--------|-----------|--------|
-| **P1** | **Jadwal Sholat + Countdown + Adzan Reminder** | Aladhan tanpa key | Kecil (1 hari) | ⭐⭐⭐⭐⭐ | 87% user Indo, cek 5x/hari — habit terkuat |
 | **P1** | **Daily Briefing 07:00 + Push** | Tanpa API (reuse berita pool) | Kecil (1 hari) | ⭐⭐⭐⭐ | Alasan buka jam 7 pagi, tanpa LLM |
 | **P2** | **Gempa BMKG Realtime + Banner** | BMKG tanpa key | Kecil (0.5 hari) | ⭐⭐⭐⭐ | FOMO, 1 gempa M5 → semua buka |
 | **P2** | **Harga Harian Emas Antam + Sembako + BBM** | CoinGecko gold + scrape pangan.go.id | Kecil (1 hari) | ⭐⭐⭐ | Ibu/ayah cek tiap pagi |
 | **P3** | **Kalender Hijriah/Jawa + Hari Libur** | Aladhan Hijri + API hari libur | Kecil | ⭐⭐⭐ | Dicek tiap hari + jelang libur |
-| **P3** | **Skor Bola Liga 1 & EPL** | ESPN hidden API tanpa key | Medium | ⭐⭐⭐⭐ | Pria 18-40 cek tiap malam |
+| **P3** | **Skor Bola 7 liga (Liga 1 + EPL/LaLiga/SerieA/Bundesliga/Ligue1/UCL)** | ESPN + TheSportsDB fallback tanpa key | Medium | ⭐⭐⭐⭐ | Pria 18-40 cek tiap malam |
 
 **Tunda:** Horoskop, Quotes (retention rendah), Chat AI (cost), Game (konten harian berat).
 
 ---
 
-## 2. P1 — Jadwal Sholat (Wajib Pertama) ⭐
+## 2. ~~P1 — Jadwal Sholat~~ — DIHAPUS
 
-### API Gratis
-
-| API | Endpoint | Key | Limit |
-|-----|----------|-----|-------|
-| **Aladhan** | `https://api.aladhan.com/v1/timingsByCity?city=Jakarta&country=Indonesia&method=20` (Kemenag) | Tanpa | Unlimited |
-| Fallback | `https://api.myquran.com/v2/sholat/jadwal/:kota/:tanggal` | Tanpa | Unlimited |
-
-Response: `{Fajr:04:42, Dhuhr:11:58, Asr:15:12, Maghrib:17:58, Isha:19:10, Hijri:{date, month}}`
-
-### Arsitektur
-
-```
-+page.server.ts ?city=Jakarta → cached('sholat:Jakarta:{date}') → Aladhan → timings
-+page.svelte → hitung countdown ke sholat berikut via clock.now (30s tick)
-PWA: setTimeout ke jam sholat → new Notification("Dzuhur 11:58") + Toast
-```
-
-Cache key `sholat:{city}:{date}` TTL 12 jam. Fallback kota dari `/cuaca` lat/lon → reverse geocode → `city`.
-
-### UI
-
-- **Home widget top:** Card gradient `QiblaHijau` — `Dzuhur 11:58 • 1j 23m lagi` + 5 jadwal mini `Subuh 04:42 | Dzuhur 11:58* | Ashar 15:12 ...`, toggle kota
-- **Halaman `/sholat` (atau tab Harian):** Tabel 5 waktu + Hijriah `12 Rajab 1447` + kiblat compass (optional Phase 2)
-- **Push:** minta `Notification.requestPermission()`, schedule 5 waktu, max 1 notif/waktu
-
-### File
-
-| File | Fungsi |
-|------|--------|
-| `src/lib/server/sholat.ts` | `fetchSholat(city)` cached |
-| `src/lib/components/SholatCard.svelte` | Countdown + 5 jadwal |
-| `src/routes/sholat/+page.*` atau integrasi di home | Halaman sholat |
-| Update `BottomNav` jika jadi tab ke-5, atau gabung di `Harian` | — |
-
-### Verifikasi
-
-`/sholat` → 5 waktu Jakarta benar, countdown jalan tiap menit, ganti kota Surabaya → jam update, tolak lokasi → Jakarta default.
+> **2026-08-29:** Fitur Sholat dibatalkan (keputusan owner). Tidak diimplementasi — tidak ada `sholat.ts`, `SholatCard`, route `/sholat`, atau notifikasi adzan. Aladhan/myquran tidak dipakai.
 
 ---
 
@@ -164,15 +127,15 @@ Response: `{Infogempa:{gempa:[{Tanggal,Jam,Magnitude,Kedalaman, Wilayah, Coordin
 
 ### Kalender
 
-- Hijriah gratis dari Aladhan `Hijri.date` (sudah ada di sholat response)
+- Hijriah gratis dari Aladhan `/v1/gToH` (Gregorian → Hijri, tanpa key) — tidak lagi bergantung response sholat yang dihapus
 - Hari libur: `https://api-harilibur.vercel.app/api` atau `https://www.googleapis.com/calendar/v3/calendars/indonesian__id@holiday.calendar.google.com` (tanpa key untuk public)
 - UI: Card `Hari ini: Senin, 12 Rajab 1447 • 7 hari lagi: Isra Miraj (libur)` di home
 
-### Skor Bola
+### Skor Bola — 7 liga (DONE 2026-08-31)
 
-- API free: `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard` (EPL tanpa key), Liga 1 via scrape `ligaindonesiabaru.com` (Phase 2)
-- UI: Card `Live: Persija 1-0 Persib 67'` di home, halaman `/bola` jadwal
-- File: `src/lib/server/bola.ts` cached `bola:scoreboard` TTL 5m
+- API free: ESPN `.../soccer/{idn.1,eng.1,esp.1,ita.1,ger.1,fra.1,uefa.champions}/scoreboard?dates=YYYYMMDD` (tanpa key, UA `axios/1.7.0` — Mozilla diblokir 403) + TheSportsDB `eventsnextleague.php?id=4790` fallback Liga 1 (gratis)
+- UI: Timeline Opsi C `jam WIB kiri 52px | divider | logo tim stack + skor | LIVE/FT` — `py-3 gap-3 rounded-xl`, chip liga `Semua|Liga 1|EPL...`, toggle `Hari Ini | Minggu Ini` (7 hari Mon-Sun), group per hari
+- File: `src/lib/server/bola.ts` (7 liga, week view, dedup) + `parsers.ts` `parseTheSportsDb` + `BolaMatch.homeLogo/awayLogo`, cached `bola:scoreboard` + `bola:scoreboard:week` TTL 5m
 
 ---
 
@@ -182,14 +145,14 @@ Response: `{Infogempa:{gempa:[{Tanggal,Jam,Magnitude,Kedalaman, Wilayah, Coordin
 
 ```
 [Berita /] [Market /market] [Cuaca /cuaca] [Harian /harian] [Tentang /tentang]
-Harian = Sholat + Briefing + Gempa + Harga (4 fitur 1 tab, hemat tab)
+Harian = Briefing + Gempa + Harga (3 fitur 1 tab, hemat tab)
 ```
 
 **Opsi B — 4 tab (lebih lega):**
 
 ```
 [Berita /] [Market /market] [Cuaca /cuaca] [Tentang /tentang]
-+ Home widget stack: Sholat countdown → Briefing → Gempa banner → Harga ticker → Berita
++ Home widget stack: Briefing → Gempa banner → Harga ticker → Berita
 (Gempa & Briefing sebagai widget home, bukan tab)
 ```
 
@@ -201,14 +164,15 @@ Harian = Sholat + Briefing + Gempa + Harga (4 fitur 1 tab, hemat tab)
 
 | Urutan | Fitur | Estimasi | Deliverable |
 |--------|-------|----------|-------------|
-| 1 | **Sholat** (Aladhan) | 1 hari | `/sholat` + home card + countdown |
-| 2 | **Briefing 07:00** (reuse berita) | 1 hari | Card home + push + `/briefing` |
-| 3 | **Gempa BMKG** | 0.5 hari | Banner + `/gempa` + push M≥5 |
-| 4 | Harga Harian | 1 hari | Ticker + `/harga` |
-| 5 | Kalender Hijriah + Libur | 0.5 hari | Card kalender |
-| 6 | Skor Bola | 1-2 hari | Card skor + `/bola` |
+| 1 | **Briefing 07:00** (reuse berita) | 1 hari | Card home + push + `/briefing` |
+| 2 | **Gempa BMKG** | 0.5 hari | Banner + `/gempa` + push M≥5 |
+| 3 | Harga Harian | 1 hari | Ticker + `/harga` |
+| 4 | Kalender Hijriah + Libur | 0.5 hari | Card kalender |
+| 5 | Skor Bola | 1-2 hari | Card skor + `/bola` |
 
-**Mulai 1+2 dulu** → langsung ada alasan buka jam 05:00 (Subuh) & 07:00 (Briefing) tiap hari.
+> ~~Sholat~~ dihapus dari roadmap (2026-08-29).
+
+**Mulai Briefing dulu** → alasan buka jam 07:00 tiap hari.
 
 ---
 
@@ -216,7 +180,7 @@ Harian = Sholat + Briefing + Gempa + Harga (4 fitur 1 tab, hemat tab)
 
 ```bash
 npm run check && npm run build
-# Sholat: /sholat → 5 waktu, countdown jalan, ganti kota, notif 1x
+# Sholat: dihapus dari plan
 # Briefing: home 07:00 card 3 bullet, klik → /briefing 6 kategori, audio play
 # Gempa: banner muncul jika M5 <1 jam, /gempa list 15, klik peta → maps
 # Harga: ticker emas/beras, /harga tabel 3 section
@@ -230,8 +194,8 @@ npm run check && npm run build
 
 | Risiko | Mitigasi |
 |--------|----------|
-| Aladhan/BMKG 5xx | `Promise.allSettled` + fallback static, card `Tidak tersedia` |
-| Push spam | Max 1 notif/hari per fitur (briefing 07:00, sholat 5x), debounce, permission eksplisit |
+| BMKG 5xx | `Promise.allSettled` + fallback static, card `Tidak tersedia` |
+| Push spam | Max 1 notif/hari per fitur (briefing 07:00), debounce, permission eksplisit |
 | BottomNav 5 tab sesak | Opsi B 4 tab + widget, max 5 tab `text-[10px]` |
 | Sembako API CORS | Fetch server-side only (sudah pola), fallback static 3 komoditas |
 | Skor bola quota | Cache 5m + fallback `Jadwal belum tersedia` |
@@ -240,8 +204,7 @@ npm run check && npm run build
 
 ## 11. Referensi
 
-- Aladhan: `https://aladhan.com/prayer-times-api`
-- MyQuran: `https://api.myquran.com`
+- Aladhan: ~~sholat~~ dihapus — masih relevan hanya untuk Hijriah (fitur Kalender)
 - BMKG: `https://data.bmkg.go.id/DataMKG/TEWS/gempaterkini.json`
 - Hari Libur: `https://api-harilibur.vercel.app`
 - ESPN Scoreboard: `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard`
@@ -254,11 +217,42 @@ npm run check && npm run build
 
 | Fitur | Status | File Kunci |
 |-------|--------|------------|
-| Sholat | ⏳ Planned | `sholat.ts`, `SholatCard` |
-| Briefing 07:00 | ⏳ Planned | `briefing.ts`, `BriefingCard` |
-| Gempa BMKG | ⏳ Planned | `gempa.ts`, `GempaBanner` |
-| Harga Harian | ⏳ Planned | `harga.ts`, `HargaTicker` |
-| Kalender | ⏳ Planned | `Hijri` dari sholat |
-| Skor Bola | ⏳ Planned | `bola.ts` |
+| Sholat | ❌ Dihapus (2026-08-29) | — |
+| Briefing 07:00 | ✅ DONE | `briefing.ts`, `BriefingCard`, `harian/briefing` + Web Speech |
+| Gempa BMKG | ✅ DONE | `gempa.ts`, `GempaCard`, `harian/gempa` + filter M≥5 |
+| Harga Harian | ✅ DONE | `harga.ts`, `HargaCard`, `harian/harga` (3 grup, est) |
+| Kalender | ✅ DONE | `kalender.ts`, `KalenderBolaCard` (Hijri + libur Nager 30 hari) |
+| Skor Bola | ✅ DONE — 7 liga + timeline + logo + week view | `bola.ts` (7 liga, UA fix, week), `parsers.ts`, `KalenderBolaCard`, `harian/bola` |
 
 > Update ⏳→✅ tiap selesai 1 fitur. Gabung ke `DOC_FITUR_MARKET_TENTANG.md` §11 jika mau 1 tracker pusat.
+
+## 13. Hasil Implementasi (2026-08-31)
+
+**Tab `/harian` — semua 5 fitur terangkum 1 halaman (widget stack) + 4 route detail.**
+
+| Fitur | Status | File |
+|-------|--------|------|
+| Sholat | ❌ Dihapus | — |
+| Briefing | ✅ DONE — `/harian` card + `/harian/briefing` + Web Speech `id-ID` (sourceIndex fix) | `briefing.ts`, `BriefingCard.svelte` |
+| Gempa BMKG | ✅ DONE — banner M≥5 + strip + `/harian/gempa` filter M≥5 + peta | `gempa.ts`, `GempaCard.svelte` |
+| Harga | ✅ DONE — card ringkas + `/harian/harga` 3 grup + disclaimer | `harga.ts`, `HargaCard.svelte` |
+| Kalender | ✅ DONE — Masehi+Hijriah+libur Nager ≤30 hari (timeline header) | `kalender.ts`, `KalenderBolaCard.svelte` |
+| Skor Bola | ✅ DONE — 7 liga + timeline Opsi C + logo + week view + chip liga | `bola.ts` (7 liga, UA fix), `parsers.ts`, `KalenderBolaCard`, `harian/bola` |
+
+**Navigasi:** BottomNav 4 tab `Berita | Cuaca | Harian | Tentang`. MarketTicker + Footer hide di `/harian`.
+
+**Server baru:** `briefing.ts` (reuse pool berita, dedup judul, 10 teratas), `gempa.ts` (autogempa+gempaterkini digabung dedup, TTL 5m), `harga.ts` (emas PAXG label `est`, sembako pangan.go.id — API sering down → null jujur, BBM statis resmi, TTL 6j), `kalender.ts` (Aladhan gToH TTL 12j + Nager.Date libur ID TTL 24j), `bola.ts` (ESPN eng.1, TTL 5m). TTL baru di `cache.ts`: gempa/bola 5m, harga 6j, hijri 12j, libur 24j.
+
+**Catatan riset endpoint:** dayoffapi.vercel.app & api-harilibur.vercel.app mati (402 deployment disabled) → pakai `date.nager.at/api/v3/publicholidays/{tahun}/ID` (aktif, gratis). Aladhan `gToH` perlu `curl -L` (301). `pangan.go.id` timeout → sembako tampil `tidak tersedia` (no dummy).
+
+**Validasi:** `check 0` `build pass`; preview 200 semua route (`/harian`, `briefing`, `gempa`, `harga`, `bola`); gempa 15 item BMKG tampil; briefing 10 berita lintas media; emas est + sembako jujur tidak tersedia; Hijriah `18 Rabiul Awal 1448 H`; jadwal EPL Aston Villa vs Arsenal kickoff WIB.
+
+**Update Bola 7 liga (2026-08-31):** ESPN 7 slug verified (`idn.1` 0 event → fallback TheSportsDB 4790 ada Arema vs Kalteng 2026-09-04), UA fix `axios/1.7.0` lolos WAF (Mozilla 403), week view 7 hari Mon-Sun, timeline `py-3` lega + logo `h-5/h-6 rounded-full`, dark widget fix `text-gray-900 dark:text-neutral-100`.
+
+### QA Polish (2026-08-31) ✅
+- Detail route punya `↻ Muat ulang` → `?force=1`; invalidasi cache fitur spesifik.
+- Normal CDN header tervalidasi: `public, s-maxage=600, stale-while-revalidate=1800`.
+- Force header tervalidasi: `no-store, no-cache, must-revalidate` (bypass CDN).
+- Semua endpoint Harian eksplisit timeout 7s; AbortController + timer cleanup diuji.
+- Briefing fallback `/baca` pakai `sourceIndex` asli, bukan index global hasil sort/dedup.
+- Parser pure BMKG/ESPN/PAXG/Pangan + timeout test: `npm test` → 8 pass.

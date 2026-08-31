@@ -9,8 +9,10 @@ export const load: LayoutServerLoad = async ({ url, setHeaders }) => {
 	} catch {
 		market = null;
 	}
-	// CDN cache 10 menit — skip untuk /cari yang pakai TTL 120 sendiri
-	if (!url.pathname.startsWith('/cari')) {
+	// Force reload harus bypass CDN agar upstream benar-benar dipanggil ulang.
+	if (url.searchParams.get('force') === '1') {
+		setHeaders({ 'cache-control': 'no-store, no-cache, must-revalidate' });
+	} else if (!url.pathname.startsWith('/cari')) {
 		setHeaders({ 'cache-control': 'public, s-maxage=600, stale-while-revalidate=1800' });
 	}
 	return { market };

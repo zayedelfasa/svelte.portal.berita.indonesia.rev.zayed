@@ -7,11 +7,11 @@
 
 Portal **agregator berita + market + cuaca** lokal Indonesia. Mobile-first `max-w-[420px]` (mirip app native), deploy **Vercel**.
 - **11 media**: Detik, CNN Indonesia, Antara, CNBC Indonesia, Tempo, Republika, Okezone, Kumparan, JPNN, Media Indonesia, iNews (3 berita teratas/media).
-- **Fitur Harian — PRIORITAS #1**: Sholat, Daily Briefing, Gempa BMKG, Harga Harian, Kalender, Skor Bola. Ikuti `docs/PLAN_FITUR_HARIAN.md`.
+- **Fitur Harian — PRIORITAS #1**: Daily Briefing, Gempa BMKG, Harga Harian, Kalender, Skor Bola (7 liga: Liga 1 + EPL/LaLiga/SerieA/Bundesliga/Ligue1/UCL). Sholat dihapus 2026-08-29. Ikuti `docs/PLAN_FITUR_HARIAN.md`.
 - **Fitur Wanita — PRIORITAS #2**: Resep, Kalender Haid private/localStorage, Drakor/Hiburan. Ikuti `docs/PLAN_FITUR_WANITA.md`.
 - **Cuaca — DONE**: Suhu + forecast 7 hari + per jam + polusi AQI/PM2.5 via **Open-Meteo** gratis tanpa key.
 - **Market — PRIORITAS #3**: Fokus TradingView widget/embed read-only. Jangan kembangkan provider custom Yahoo/TwelveData/IDX atau data market dummy. Ikuti `docs/PLAN_MARKET_TRADINGVIEW.md`.
-- **3 tab aktif** via BottomNav tetap `Berita /` · `Cuaca /cuaca` · `Tentang /tentang` sampai ada keputusan navigasi baru.
+- **3 tab aktif** via BottomNav → **4 tab sejak 2026-08-31**: `Berita /` · `Cuaca /cuaca` · `Harian /harian` (Fitur Harian: briefing+gempa+harga+kalender+bola) · `Tentang /tentang`.
 
 **Goal bisnis:** Satu tempat baca headline 11 media + pantau cuaca/polusi harian + market (saat provider ready). Bukan full trading app, bukan scrape isi penuh — klik judul → situs asli. **Bukan rekomendasi investasi.**
 
@@ -156,6 +156,11 @@ interface AirQualityData { us_aqi, pm2_5, pm10, category: 'Baik'|'Sedang'|... }
 | `/` | `routes/+page.*` | Home: 11 section ×3 artikel, `?kategori=` (6 kategori kanonik), filter sumber client, `Ticker` berita |
 | `/cuaca` | `routes/cuaca/+page.*` | Cuaca (C1): `?lat=&lon=&name=` → 2 card suhu+polusi + forecast 7d + hourly, fallback Jakarta, geolocation client |
 | `/cuaca/cari` | `routes/cuaca/cari/+page.*` | Cari kota (C2): `?q=` → geocoding 5 hasil → klik → `/cuaca?lat=&lon=` |
+| `/harian` | `routes/harian/+page.*` | Tab Harian: briefing + gempa + harga + kalender + bola (widget stack, conditional) |
+| `/harian/briefing` | `routes/harian/briefing/+page.*` | Ringkasan pagi 10 berita + Web Speech |
+| `/harian/gempa` | `routes/harian/gempa/+page.*` | List 15-20 gempa BMKG + filter M≥5 + link peta |
+| `/harian/harga` | `routes/harian/harga/+page.*` | Tabel 3 grup Emas/Sembako/BBM + disclaimer |
+| `/harian/bola` | `routes/harian/bola/+page.*` | Live/Selesai/Minggu Ini (7 liga) + chip liga + timeline jam kiri/divider/logo + `?week=1&force=1` |
 | `/market` | `routes/market/+page.*` | Market — HIDDEN dari BottomNav (TUNDA): IHSG/LQ45/USDIDR + crypto top 5, badge 24h, route tetap ada |
 | `/tentang` | `routes/tentang/+page.svelte` | Static: 5 card info aplikasi |
 | `/baca` | `routes/baca/+page.*` | Detail: `u=` primary → `id` fallback → scan pool kategori |
@@ -164,14 +169,14 @@ interface AirQualityData { us_aqi, pm2_5, pm10, category: 'Baik'|'Sedang'|... }
 | `/simpan` | `routes/simpan/+page.svelte` | Bookmarks localStorage snapshot |
 | `GET /api/source/:id` | `routes/api/source/[id]/+server.ts` | Retry per-section, `?force=1` invalidate |
 
-**Layout:** `+layout.svelte` = `Header` sticky + `MarketTicker` conditional (`{#if data?.market}`) + `main pb-[calc(56px+safe-area)]` + `Footer` + `BottomNav` fixed 3 tab (`Berita|Cuaca|Tentang`). `+layout.server.ts` load market try/catch (boleh kosong).
+**Layout:** `+layout.svelte` = `Header` sticky + `MarketTicker` conditional (`{#if data?.market && !isCuaca && !isHarian && !isTentang}`) + `main pb-[calc(56px+safe-area)]` + `Footer` + `BottomNav` fixed 4 tab (`Berita|Cuaca|Harian|Tentang`). `+layout.server.ts` load market try/catch (boleh kosong).
 
 **Konvensi:**
 - Svelte 5 runes: `$props()`, `$state`, `$derived`, `$effect`, `onclick={}` (bukan `on:click`)
 - Dark mode: `class="dark:bg-..."` + toggle `documentElement.classList.toggle('dark')`
 - Waktu relatif: `clock.now` update 30s di layout, `timeAgo(iso, clock.now)`
 - Icon: inline SVG `stroke="currentColor"` tanpa lib
-- Cache key: `rss:{id}`, `agg:{id}`, `market:ticker`, `weather:current:{lat,lon}`, `weather:air:{lat,lon}`, `weather:geo:{q}`, `weather:reverse:{lat,lon}`; kategori = headline → dedup
+- Cache key: `rss:{id}`, `agg:{id}`, `market:ticker`, `weather:current:{lat,lon}`, `weather:air:{lat,lon}`, `weather:geo:{q}`, `weather:reverse:{lat,lon}`, `gempa:terkini`, `harga:harian`, `bola:scoreboard`, `bola:scoreboard:week`, `briefing:v1`, `kalender:{date}`; kategori = headline → dedup
 
 ## 7. Data Sources
 
@@ -184,6 +189,12 @@ interface AirQualityData { us_aqi, pm2_5, pm10, category: 'Baik'|'Sedang'|... }
 | Cuaca current+forecast | `api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum&hourly=temperature_2m,weather_code&timezone=Asia/Jakarta&forecast_days=7` | tanpa | Unlimited, TTL 10m |
 | Polusi AQI | `air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide&timezone=Asia/Jakarta` | tanpa | Unlimited, TTL 10m |
 | Geocoding kota | `geocoding-api.open-meteo.com/v1/search?name={q}&count=5&language=id` + reverse | tanpa | Unlimited, TTL 1j (search) / 1d (reverse) |
+| Emas | `api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=idr` | tanpa | Proksi PAXG per-ounce → per-gram, label `est`, TTL 6j |
+| Hari libur | `date.nager.at/api/v3/publicholidays/{tahun}/ID` | tanpa | dayoffapi/harilibur vercel mati (402), TTL 24j |
+| Gempa BMKG | `data.bmkg.go.id/DataMKG/TEWS/{autogempa,gempaterkini}.json` | tanpa | TTL 5m, kadang 403 → empty jujur |
+| Skor bola | `site.api.espn.com/.../soccer/{eng.1,esp.1,ita.1,ger.1,fra.1,uefa.champions,idn.1}/scoreboard?dates=YYYYMMDD` + `thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4790` (Liga 1 fallback) | tanpa | 7 liga, TTL 5m, ESPN WAF block Mozilla → UA `axios/1.7.0`, week view 7 hari, logo club |
+| Hijriah | `api.aladhan.com/v1/gToH?date=DD-MM-YYYY` | tanpa | perlu follow redirect (301), TTL 12j |
+| Sembako | `api.pangan.go.id/api/harga` | tanpa | sering timeout → null jujur (no dummy) |
 
 **Jangan** hardcode API key saham/crypto berbayar — pakai yang gratis di atas. Selalu `cached()` + CDN. **Jangan pakai dummy harga** — lihat `DOC_JANGAN_GUNAKAN_DUMMY.md`.
 
@@ -193,12 +204,21 @@ interface AirQualityData { us_aqi, pm2_5, pm10, category: 'Baik'|'Sedang'|... }
 2. **Svelte 5 runes only** — jangan pakai `export let`, `on:click`, store `writable` lama.
 3. **Server load harus `Promise.allSettled` + `s-maxage`** — jangan `Promise.all` yang jatuhkan halaman.
 4. **Cache TTL 10m** — bungkus fetch baru dengan `cached(key, fn)` (crypto 2m/IDX 15m/Forex 10m, weather 10m, geo 1j).
-5. **BottomNav 3 tab tetap** — jangan pindah ke drawer/hamburger. Urutan **aktif** `Berita|Cuaca|Tentang` (Market hidden 2026-08-27, route `/market` tetap ada tapi tidak di nav).
+5. **BottomNav 4 tab** — `Berita|Cuaca|Harian|Tentang` (Harian baru 2026-08-31; Market hidden, route `/market` tetap ada tapi tidak di nav).
 6. **Mobile-first 420px** — jangan melebar desktop, jangan ubah `max-w-[420px]` tanpa diskusi.
 7. **Cek sebelum push:** `npm run check` 0 error + `npm run build` pass.
 8. **Branch:** kerja di `dev`, jangan push ke `main` langsung. Commit message `feat|fix|docs|refactor(scope): ...`.
 
-## 9. State Saat Ini (dev — 2026-08-27)
+## 9. State Saat Ini (dev — 2026-08-31)
+
+**Done (2026-08-31) — FITUR HARIAN tab `/harian` + Bola 7 liga + Timeline:**
+- 5 fitur terangkum 1 tab: BriefingCard + GempaCard + HargaCard + KalenderBolaCard (widget stack conditional) + 4 detail route `/harian/{briefing,gempa,harga,bola}`
+- Bola expand 1→7 liga: `idn.1` (Liga 1 fallback TheSportsDB 4790) + EPL/LaLiga/SerieA/Bundesliga/Ligue1/UCL; ESPN UA fix `axios/1.7.0` (Mozilla diblokir 403); week view 7 hari Mon-Sun `?week=1`; cache `bola:scoreboard` + `bola:scoreboard:week`
+- Timeline Opsi C: `jam WIB kiri 52px | divider | logo tim stack 2 baris + skor | LIVE/FT/badge` — `py-3 gap-3 rounded-xl`, dark fix widget `text-gray-900 dark:text-neutral-100`
+- Server: `briefing.ts`, `gempa.ts`, `harga.ts`, `kalender.ts`, `bola.ts` + TTL baru gempa/bola 5m, harga 6j, hijri 12j, libur 24j; `parsers.ts` + `harian.ts` logo fields
+- BottomNav 4 tab `Berita|Cuaca|Harian|Tentang`; MarketTicker+Footer hide di `/harian`
+- No dummy: sembako gagal → `tidak tersedia`; emas PAXG label `est`; BBM statis resmi
+- Detail riset endpoint → `docs/PLAN_FITUR_HARIAN.md` §13
 
 **Done (CHANGELOG 2026-01-05 & 2026-08-26):**
 - Market Phase 0 + Phase 1: ticker global + `/market` + `/market/[symbol]` + gainer/loser + trending + kalkulator + auto-tag + filter/sort + sparkline (build pass, `svelte-check 0`)
@@ -212,7 +232,7 @@ interface AirQualityData { us_aqi, pm2_5, pm10, category: 'Baik'|'Sedang'|... }
 - 7 issues (#1-#7) closed
 
 **Status prioritas eksekusi:**
-1. **Fitur Harian** — Sholat → Daily Briefing → Gempa → Harga → Kalender → Skor Bola. Baca `docs/PLAN_FITUR_HARIAN.md` sebelum implementasi.
+1. **Fitur Harian** — ✅ SELESAI 5/5 via tab `/harian` (2026-08-31): Briefing ✅ + Gempa ✅ + Harga ✅ + Kalender ✅ + Bola 7 liga + timeline + logo + week view ✅ (Sholat ❌ dihapus). QA polish ✅ (`?force=1`, timeout 7s, header audit, parser test 8 pass, dark fix). Lanjut optional: PWA notif. Lihat `docs/PLAN_FITUR_HARIAN.md` §13.
 2. **Fitur Wanita** — Resep → Kalender Haid private/localStorage → Drakor/Hiburan. Baca `docs/PLAN_FITUR_WANITA.md` sebelum implementasi.
 3. **Market TradingView** — widget/embed read-only saja. Baca `docs/PLAN_MARKET_TRADINGVIEW.md`. Jangan kembali ke Yahoo/TwelveData/custom market fetch.
 

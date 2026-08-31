@@ -18,7 +18,12 @@ const TTL_TRENDING_MS = 60 * 60 * 1000;
 const TTL_WEATHER_MS = 10 * 60 * 1000;
 const TTL_GEO_MS = 60 * 60 * 1000;
 const TTL_REVERSE_MS = 24 * 60 * 60 * 1000;
-export const TTL = { default: TTL_MS, crypto: TTL_CRYPTO_MS, idx: TTL_IDX_MS, forex: TTL_FOREX_MS, trending: TTL_TRENDING_MS, weather: TTL_WEATHER_MS, geo: TTL_GEO_MS, reverse: TTL_REVERSE_MS };
+const TTL_GEMPA_MS = 5 * 60 * 1000;
+const TTL_BOLA_MS = 5 * 60 * 1000;
+const TTL_HARGA_MS = 6 * 60 * 60 * 1000;
+const TTL_HIJRI_MS = 12 * 60 * 60 * 1000;
+const TTL_LIBUR_MS = 24 * 60 * 60 * 1000;
+export const TTL = { default: TTL_MS, crypto: TTL_CRYPTO_MS, idx: TTL_IDX_MS, forex: TTL_FOREX_MS, trending: TTL_TRENDING_MS, weather: TTL_WEATHER_MS, geo: TTL_GEO_MS, reverse: TTL_REVERSE_MS, gempa: TTL_GEMPA_MS, bola: TTL_BOLA_MS, harga: TTL_HARGA_MS, hijri: TTL_HIJRI_MS, libur: TTL_LIBUR_MS };
 
 export function invalidateCache(prefix: string) {
 	for (const k of [...store.keys()]) if (k === prefix || k.startsWith(prefix + ':') || k.startsWith(prefix + '/')) store.delete(k);

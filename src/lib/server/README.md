@@ -10,9 +10,11 @@ dieksekusi dari `+page.server.ts`, `+server.ts`, atau file lain di dalam `server
 | `http.ts` | `fetchWithTimeout(url, opts, ms=7000-8000)` AbortController + UA browser; `stripHtml()`; `firstImgSrc()` |
 | `rss.ts` | `parseRss(xml, sourceId)` — fast-xml-parser, `removeNSPrefix`, ekstrak enclosure → image |
 | `aggregator.ts` | `fetchAggregator(path, id)` — JSON berita-indo-api → `Article[]`, fallback RSS bila mati |
-| `cache.ts` | Map memori: `cached(key, fn, ttl)`, `peekCache(key)`, `invalidateCache(prefix)` + `TTL` split `{default:10m, crypto:2m, idx:15m, forex:10m, trending:1h, weather:10m, geo:1h, reverse:1d}` |
+| `cache.ts` | Map memori: `cached(key, fn, ttl)`, `peekCache(key)`, `invalidateCache(prefix)` + `TTL` split berita 10m, crypto 2m, idx 15m, forex 10m, trending 1j, weather 10m, geo 1j, reverse 1d, Harian: gempa/bola 5m, harga 6j, hijri 12j, libur 24j |
 | `market.ts` | **Market** `fetchMarketData(): Promise<MarketData>` — CoinGecko 5 crypto + TwelveData Forex (USD/IDR, IHSG via JKSE tunda) + `exchangerate.host` fallback; `cached('market:ticker')`, `peekCache` stale 24j, no dummy |
 | `weather.ts` | **Cuaca** `fetchWeather(lat,lon): WeatherData`, `fetchAirQuality(lat,lon): AirQualityData`, `searchCity(q): GeoCity[]`, `reverseGeocode(lat,lon): string` — Open-Meteo gratis unlimited, `cached('weather:*')` + `fetchWithTimeout(7000)` |
+| `parsers.ts` | Pure parser BMKG/ESPN/TheSportsDB/PAXG/Pangan — unit-tested tanpa fetch live; ESPN `team.logo` → `BolaMatch.homeLogo/awayLogo` |
+| `bola.ts` | **Bola** `fetchBola({week}): BolaData` — 7 liga ESPN (UA `axios/1.7.0`) + TheSportsDB 4790 fallback Liga 1, `?dates=YYYYMMDD` week Mon-Sun, dedup Map, `cached('bola:scoreboard'+':week')` TTL 5m |
 | `sources/` | Adapter 11 media — [README](sources/README.md) |
 | `../weatherCode.ts` | Mapping WMO `weather_code → {label, icon}` ID (dipakai `WeatherCard`/`ForecastStrip`) |
 
@@ -39,7 +41,7 @@ load cuaca (/cuaca/+page.server.ts)
 - TTL split: berita 10m, crypto 2m, idx 15m, forex 10m, trending 1h, weather 10m, geo 1h, reverse 1d; prune >200 entri
 - Keys: `rss:{id}`, `agg:{id}`, `market:ticker`, `market:trending`, `weather:current:{lat,lon}`, `weather:air:{lat,lon}`, `weather:geo:{q}`, `weather:reverse:{lat,lon}`
 - `peekCache` baca stale tanpa reset TTL (dipakai market fallback 24j)
-- Per-instance serverless + CDN `s-maxage=600` (`+layout.server.ts` set header, cuaca reuse tanpa set ulang)
+- Per-instance serverless + CDN `s-maxage=600` (`+layout.server.ts` set header, child pages reuse tanpa set ulang); `?force=1` = `no-store` + invalidasi cache fitur
 
 ## Menambah helper server
 
