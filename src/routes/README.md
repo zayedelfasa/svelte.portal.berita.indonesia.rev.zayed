@@ -11,7 +11,8 @@ Konvensi: tiap folder = 1 route/halaman. File `+page.server.ts` = load data serv
 | `routes/cuaca/cari/` | `/cuaca/cari?q=` | `+page.server.ts` + `+page.svelte` | **Cari Kota**: `?q=` debounce 300ms → `searchCity` 5 hasil, kartu Kota Populer, pick → `/cuaca?lat=&lon=&name=` + save `cuaca:loc` |
 | `routes/market/` | `/market` | `+page.server.ts` + `+page.svelte` | **Market (HIDDEN dari BottomNav)**: tabel Saham/Forex + Crypto Top 5, reuse `market:ticker`, badge 24h, sparkline, filter/sort |
 | `routes/market/[symbol]/` | `/market/:symbol` | `+page.server.ts` + `+page.svelte` | Detail symbol + sparkline |
-| `routes/tentang/` | `/tentang` | `+page.svelte` static | 4 card — Apa ini / Fitur Utama (Berita+Cuaca) / Sumber Data / Versi — tanpa Teknologi |
+| `routes/harian/` | `/harian` | `+page.server.ts` + `+page.svelte` | Tab Harian: Briefing, Gempa, Harga, Kalender, Bola (widget timeline logo, week Mon-Sun); detail `/harian/{briefing,gempa,harga,bola}` — bola chip liga + `?week=1` |
+| `routes/tentang/` | `/tentang` | `+page.svelte` static | 4 card — Apa ini / Fitur Utama (Berita+Cuaca+Harian) / Sumber Data / Versi — tanpa Teknologi |
 | `routes/media/[source]/` | `/media/:source` | `+page.server.ts` | List 50 artikel 1 media + load-more +10 |
 | `routes/baca/` | `/baca?source=&u=&id=` | `+page.server.ts` | Detail: `u` primary → `id` fallback → pool kategori; `more` 3 artikel |
 | `routes/cari/` | `/cari?q=` | `+page.server.ts` | Search pool 100/media, max 50, `s-maxage=120` |
@@ -20,13 +21,13 @@ Konvensi: tiap folder = 1 route/halaman. File `+page.server.ts` = load data serv
 
 ## Layout
 
-`+layout.svelte` — wrapper `max-w-[420px]` putih di backdrop abu; sticky `Header`; **MarketTicker** conditional `{#if data?.market && !isCuaca && !isTentang}` hide di `/cuaca` & `/tentang`/`/about`; `main pb-[calc(56px+safe-area)]`; `Footer` hide di `/cuaca` & `/tentang` (`isCuaca`/`isTentang` dari `page.url.pathname`); `BottomNav` fixed 3 tab (`Berita|Cuaca|Tentang`, `cuacaHref` dinamis dari `localStorage`).
+`+layout.svelte` — wrapper `max-w-[420px]` putih di backdrop abu; sticky `Header`; **MarketTicker** conditional hide di `/cuaca`, `/harian`, `/tentang`/`/about`; `main pb-[calc(56px+safe-area)]`; `Footer` hide di `/cuaca`, `/harian`, `/tentang`; `BottomNav` fixed 4 tab (`Berita|Cuaca|Harian|Tentang`, `cuacaHref` dinamis dari `localStorage`).
 `+layout.server.ts` — load `market: MarketData | null` via `fetchMarketData()` (try/catch), header `s-maxage=600` (cuaca reuse tanpa set ulang).
 
 ## Konvensi
 
 - Load berita & cuaca pakai `Promise.allSettled` + tanpa `setHeaders` double (s-maxage via layout)
-- `cache-control: public, s-maxage=600, stale-while-revalidate=1800` (layout) + cuaca `cached` TTL split
+- `cache-control: public, s-maxage=600, stale-while-revalidate=1800` (layout); `?force=1` detail Harian → `no-store` + invalidasi cache fitur; cuaca/Harian `cached` TTL split
 - Svelte 5 runes: `$props()`, `$state`, `$derived`, `$effect`, `onclick={}`
 - Cuaca persist: `localStorage 'cuaca:loc'` dibaca `BottomNav` + `/cuaca` (goto replaceState)
 - Detail lebih dari pool umum dicari di pool kategori (baca)

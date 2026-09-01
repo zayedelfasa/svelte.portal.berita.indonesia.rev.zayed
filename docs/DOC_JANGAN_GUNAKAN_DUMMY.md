@@ -1,7 +1,7 @@
 # DOC: JANGAN GUNAKAN DUMMY — Kebijakan Data Market
 
 > **Prinsip:** Lebih baik kosong jujur daripada angka palsu kelihatan live.
-> Berlaku untuk `src/lib/server/market.ts` + `src/lib/server/cache.ts` + `src/routes/market/*` + `MarketTicker.svelte`.
+> Berlaku untuk `src/lib/server/market.ts` + `src/lib/server/harga.ts` + `src/lib/server/cache.ts` + `src/routes/market/*` + `MarketTicker.svelte` + `HargaCard`.
 
 ## 1. Masalah Dummy Lama
 
@@ -73,10 +73,15 @@ curl -s "http://localhost:5173/api/source/idx?force=1" | jq .
 - [ ] `npm run check` 0 error
 - [ ] Test: matikan internet → `/market` tampil card jujur, bukan angka
 
-## 6. Roadmap
+## 6. Harga Harian — pangan.go.id Dihapus (2026-09-01)
+
+`api.pangan.go.id/api/harga` dihapus selamanya: 95% `null` + timeout 7s → `fetchSembako()` + `SEMBAKO_NAMA` + `parsePanganPrice` usage dihapus. Sembako Rp/kg diganti `🔥 Tren Sembako (7 hari, geo ID)` skor 0-100 via Google Trends embed iframe (B1, no key, no 429) — jujur karena harga sembako beda per daerah (Jakarta vs NTT beda 4rb), tren selalu ada data. Logam: `pax-gold` + `kinesis-silver` (fallback `tether-silver`/`silver-token`) → `parseLogamPrice` per-gram `est`. BBM tambah LPG 3kg/12kg statis. Footer wajib: `Skor 0-100 = minat pencarian, bukan harga Rp. Beda daerah beda harga.`
+
+## 7. Roadmap
 
 - Phase selanjutnya: tambah `Investing`/`kuarsa` sebagai layer 3, tetap tanpa dummy.
 - Jika butuh angka fallback, pakai `lastGood` stale + label `Data 45m lalu` + banner, bukan hardcode.
+- Harga Phase 2 opsional: `trends.ts` fetch skor JSON `cached('trends:sembako:{date}',6j)` jika embed kurang custom.
 
 ---
 Ref: `AGENTS.md §5` cache pattern, `ARCHITECTURE.md`, `DOC_FITUR_MARKET_TENTANG.md` Gap A2.

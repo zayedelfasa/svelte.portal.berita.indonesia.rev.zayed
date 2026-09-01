@@ -46,6 +46,7 @@
 			icon: 'berita'
 		},
 		{ href: cuacaHref, label: 'Cuaca', match: (p: string) => p.startsWith('/cuaca'), icon: 'cuaca' },
+		{ href: '/harian', label: 'Harian', match: (p: string) => p.startsWith('/harian'), icon: 'harian' },
 		{ href: '/tentang', label: 'Tentang', match: (p: string) => p.startsWith('/tentang'), icon: 'tentang' }
 	]);
 
@@ -74,6 +75,10 @@
 					<path d="M4 22h14a2 2 0 0 0 2-2V6H6a2 2 0 0 0-2 2v14z" />
 					<path d="M16 2v4" /><path d="M8 2v4" /><path d="M4 10h16" />
 					<path d="M8 14h8" /><path d="M8 18h5" />
+				</svg>
+			{:else if n.icon === 'harian'}
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={active ? 2.2 : 1.8} stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+					<rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h18" /><path d="M9 16l2 2 4-4" />
 				</svg>
 			{:else if n.icon === 'cuaca'}
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={active ? 2.2 : 1.8} stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">

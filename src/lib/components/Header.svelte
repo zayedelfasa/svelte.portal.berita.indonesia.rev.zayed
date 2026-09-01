@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { clock } from '$lib/utils/clock.svelte';
 	import { timeAgo } from '$lib/time';
 	import { bookmarks } from '$lib/utils/bookmarks.svelte';
@@ -13,8 +13,12 @@
 	let theme: 'light' | 'dark' = $state('light');
 
 	function goBack() {
-		if (history.length > 1) history.back();
-		else location.href = '/';
+		const p = page.url.pathname;
+		if (p.startsWith('/harian')) goto('/harian');
+		else if (p.startsWith('/cuaca')) goto('/cuaca');
+		else if (p.startsWith('/tentang') || p.startsWith('/about')) goto('/tentang');
+		else if (p.startsWith('/market')) goto('/market');
+		else goto('/');
 	}
 
 	async function refresh() {

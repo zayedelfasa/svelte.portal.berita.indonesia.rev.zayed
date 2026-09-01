@@ -282,6 +282,128 @@ Status: **NEXT** — Yahoo HAPUS total (403 kurang bagus)
 - Belum ada commit baru setelah pekerjaan ini.
 - Belum push ke remote branch.
 
+## 2026-08-31 — Bola 7 liga + Timeline Opsi C + Logo + Week View
+
+- `BolaMatch` tambah `homeLogo/awayLogo`; `parsers.ts` `parseTheSportsDb` (TheSportsDB 4790 Liga 1) + ESPN `team.logo`.
+- `bola.ts` expand `LEAGUES` 1→7 (Liga 1 `idn.1` fallback DB + EPL/LaLiga/SerieA/Bundesliga/Ligue1/UCL), ESPN WAF fix UA `axios/1.7.0` (Mozilla 403), `fetchBola({week})` 7 hari Mon-Sun `?dates=YYYYMMDD`, dedup `Map`, cache `bola:scoreboard` + `bola:scoreboard:week` TTL 5m.
+- Widget `KalenderBolaCard` + detail `harian/bola` ganti ke timeline `jam kiri 52px | divider | logo stack + skor | LIVE/FT` — `py-3 gap-3 rounded-xl`, `space-y-2` lega, `onerror hide`, dark fix `text-gray-900 dark:text-neutral-100`.
+- Detail tambah chip liga `Semua|Liga 1|...` + toggle `Hari Ini | Minggu Ini` + group per hari, preserve `?liga=&week=&force`.
+- Validasi: `check 0`, `build pass`, preview `200` harian/bola + `?week=1`.
+
+## 2026-08-31 — QA Fitur Harian: Reload, Timeout, Cache Header, Parser Test
+
+- Detail route `/harian/{briefing,gempa,harga,bola}` tambah link `↻ Muat ulang` → `?force=1`.
+- `force=1` invalidasi cache fitur terkait; layout kirim `cache-control: no-store, no-cache, must-revalidate` → bypass CDN.
+- Normal page tetap `public, s-maxage=600, stale-while-revalidate=1800`; smoke test 5 route = header benar; force route = `no-store`.
+- Audit timeout: semua API Harian eksplisit 7000ms via `fetchWithTimeout`; AbortController timer cleanup diuji.
+- Fix fallback `/baca`: briefing item simpan `sourceIndex` sebelum sort/dedup; link tidak lagi pakai index global.
+- Extract pure parser `src/lib/server/parsers.ts`: `parseBmkgGempa`, `parseEspnScoreboard`, `parsePaxgPrice`, `parsePanganPrice`.
+- Tambah Vitest: `src/lib/server/__tests__/parsers.test.ts` + `http.test.ts`; `npm test` = 8 tests pass.
+- Validasi akhir: `npm run check` 0 error/0 warning; `npm test` 8 pass; `npm run build` pass.
+
+## 2026-08-31 — Fitur Harian: Tab `/harian` (5 fitur 1 tab) + 4 Detail Route
+
+Branch kerja: `dev`
+
+### Navigasi
+- BottomNav 3 → 4 tab: `Berita | Cuaca | Harian | Tentang` (ikon kalender-check)
+- `+layout.svelte` — MarketTicker + Footer hide di `/harian` (fokus info harian)
+
+### Server Baru (semua gratis tanpa key, cached, allSettled)
+- `briefing.ts` — reuse pool berita 11 media (`fetchTop` cached), dedup judul, 10 teratas. TTL 10m
+- `gempa.ts` — BMKG autogempa + gempaterkini digabung dedup, sort terbaru. TTL 5m
+- `harga.ts` — Emas via CoinGecko PAXG (IDR, per-gram, label `est`), Sembako `pangan.go.id` (sering timeout → null jujur), BBM statis resmi Pertamina. TTL 6j
+- `kalender.ts` — Hijriah Aladhan `gToH` (301 → follow) + libur Nager.Date `publicholidays/{tahun}/ID`, terdekat ≤30 hari. TTL 12j/24j
+- `bola.ts` — ESPN scoreboard `eng.1` (EPL), parse live/finished/scheduled. TTL 5m
+- `cache.ts` — TTL baru: `gempa`, `bola` 5m; `harga` 6j; `hijri` 12j; `libur` 24j
+- `harian.ts` — types shared (BriefingData, GempaData, HargaData, KalenderData, BolaData)
+
+### Komponen
+- `BriefingCard.svelte` — 3 bullet + badge media + Web Speech `id-ID` (toggle 🔊/⏹, cancel saat unmount)
+- `GempaCard.svelte` — banner merah M≥5 <24j (border-l-red-500) / strip tipis kecil / hidden gagal; link peta Google Maps
+- `HargaCard.svelte` — ringkas emas+2 sembako+BBM, arrow change, badge `est`
+- `KalenderBolaCard.svelte` — Masehi+Hijriah+badge libur; live score pulse (maks 3, hidden jika kosong)
+
+### Route
+- `/harian` — widget stack + empty-state jujur jika semua gagal
+- `/harian/briefing` — 10 berita + tombol 🔊 per item
+- `/harian/gempa` — list + chip filter `Semua / M≥5` + link peta
+- `/harian/harga` — tabel 3 grup + disclaimer per grup + badge `est`
+- `/harian/bola` — 3 section Live/Selesai/Jadwal (Svelte 5 snippet `MatchRow`)
+
+### Riset Endpoint (catatan penting)
+- `dayoffapi.vercel.app` + `api-harilibur.vercel.app` mati (402 deployment disabled) → pakai Nager.Date (aktif, gratis, data ID lengkap)
+- Aladhan `gToH` redirect 301 → fetch perlu follow (fetchWithTimeout sudah `redirect: 'follow'`)
+- `pangan.go.id` timeout dari server ini → sembako tampil `tidak tersedia` (no dummy)
+- BMKG kadang 403 per-endpoint → allSettled 2 endpoint, satu sukses cukup
+
+### Validasi
+- `npm run check` 0 error 0 warning, `npm run build` pass
+- Preview 200 semua route baru + home/cuaca/tentang regressi OK
+- Gempa 15+ item BMKG tampil, briefing 10 berita lintas media, Hijriah `18 Rabiul Awal 1448 H`, jadwal EPL kickoff WIB, emas est + sembako jujur tidak tersedia
+
+## 2026-08-29 — Dokumentasi Remote Deployment Vercel
+
+- Vercel deployment memakai `github.com/zayedelfasa/newsaggregate`.
+- Repository source tetap `github.com/zayedelfasa/svelte.portal.berita.indonesia.rev.zayed` pada remote `origin`.
+- Ditambahkan remote `vercel` sebagai target deployment Opsi B.
+- Preview: `git push -u vercel dev`.
+- Production: `git push vercel dev:main` setelah `npm run check` dan `npm run build` pass.
+- Tidak ada perubahan kode aplikasi.
+
+## 2026-09-01 — Pivot Harga: Hapus pangan.go.id + Tren Sembako + Perak & LPG
+
+Branch kerja: `dev` — PLAN_HARGA_TRENDS PRIORITAS UTAMA (1 hari)
+
+### 1. Hapus pangan.go.id
+- `src/lib/server/harga.ts`: hapus `SEMBAKO_NAMA`, `fetchSembako()`, import `parsePanganPrice`; ganti `fetchEmas()` → `fetchLogam()` (PAXG+KAG)
+- `src/lib/server/parsers.ts`: `parsePaxgPrice` → wrapper `parseLogamPrice` (+ fallback `tether-silver`/`silver-token`), `parsePanganPrice` deprecated stub
+- `src/lib/harian.ts`: `HargaItem.grup` `emas|sembako|bbm` → `logam|tren|bbm`
+- Grep pangan.go.id functional 0 (sisa hanya comment di-deprecated)
+
+### 2. Logam Mulia + LPG
+- `harga.ts` `fetchLogam()` → `GET simple/price?ids=pax-gold,kinesis-silver` (verified 200), `/31.1034768` → per gram `est` + `change24h`
+- `BBM` 4 → 6: tambah `lpg-3kg 16k HET subsidi` + `Bright Gas 12kg 192k` (Pertamina resmi, note beda provinsi)
+- `harga:harian` cached 6j tetap; `items` 2 logam + 6 bbm (tren via embed, no server items)
+
+### 3. Tren Sembako B1 Embed
+- Baru `src/lib/components/TrenSembakoCard.svelte`: `iframe` `trends.google.com/trends/embed/explore?date=now 7-d&geo=ID&q=cabai merah,bawang merah,beras,minyak goreng,telur ayam&hl=id`, `loading=lazy`, footer `Skor 0-100 = minat pencarian, bukan harga Rp`
+- `/harian/harga/+page.svelte`: GROUPS 3→2 (`🥇 Logam Mulia` + `⛽ BBM & LPG`) + `<TrenSembakoCard/>` tengah, badge est + change%, footer global `Skor tren = minat... Harga bervariasi per daerah`
+- `HargaCard.svelte` widget `/harian`: ringkas 2 logam + 1 bbm + row amber `🔥 Tren Sembako 7d skor 0-100 →` + link `Lihat detail →`
+
+### 4. Docs & Test
+- `DOC_JANGAN_GUNAKAN_DUMMY.md` §6 catat penghapusan pangan.go.id + alasan tren jujur
+- `README.md` harian: `PAXG+KAG est + Tren 7d + BBM&LPG`
+- `parsers.test.ts`: tambah `parseLogamPrice` test (pax-gold 1jt/g + KAG 38k/g), keep pangan deprecated test
+- Validasi: `npm run check` 0, `build` pass 8.2s, `vitest` 9 pass, `kinesis-silver` 200 OK, `grep -r pangan.go.id src/` 0 functional, preview `/harian/harga` 3 blok tampil
+
+## 2026-09-01 — Tren Chart Full-width + Kalender Hari Penting + Header Back Direct
+
+Branch kerja: `dev` — lanjut PLAN_HARGA_TRENDS Phase 2 + Kalender per bulan
+
+### 1. Tren Chart (fix 404 → custom SVG)
+- `trends.ts` 404 embed `/trends/embed` mati → ganti custom fetch `api/explore`→`widgetdata/multiline` geo ID now 7-d, TTL 6j, `cached('trends:sembako:v1')`, downsample hourly 168→7 daily (chunk avg), synthetic fallback deterministik per tgl agar grafik tetap tampil jika 429
+- `TrenSembakoCard.svelte` full-width per keyword `340×48` + grid 3 + dot 3 white stroke + label skor 7.5px di atas dot (bg white) + tanggal HTML grid-cols-7, warna by delta (merah naik/biru turun/hijau flat), info box `Apa itu skor 0-100?` (100 puncak, relatif per keyword, bukan Rp)
+- `/harian/harga/+page.server.ts` `Promise.allSettled([fetchHarga(), fetchTrendsSembako()])` + `?force=1` invalidate trends, `harian.ts` `TrendsSembakoData` share type
+- Fix berantakan 168 titik → 7, fix ga keliatan → synthetic, fix mobile tidak beraturan → tanggal keluar SVG
+- Validasi: `check 0` `build pass`, `/harian/harga?force=1` 5 card 7 titik bersih `cabai 72,64,63…`
+
+### 2. Kalender — Hari Penting Nasional Per Bulan
+- Baru `src/lib/hariPenting.ts` statis 12 bulan kurasi Wikipedia Daftar hari penting Indonesia (Sept 12: Polwan 1, Aksara 8, Haornas 9, RRI 11, PMI/Perhubungan 17, Tani 24, Kereta 28, G30S 30 etc.)
+- `kalender.ts` merge Nager libur bulan ini + statis → `hariBulan` + `bulanLabel` + `isToday`, `KalenderData` extend
+- `harian.ts` `KalenderData` + `hariBulan: {date,name,isLibur,isToday}[]` + `bulanLabel`
+- Baru route `/harian/kalender/+page.*` detail full list per bulan (12 Sept), `KalenderBolaCard` preview 4 + `+X lagi • lihat semua` link `/harian/kalender` (hapus header lihat hari penting, keep bawah)
+- Validasi: `http://localhost:5173/harian?force=1` preview 4 + link, `/harian/kalender?force=1` 12 Sept
+
+### 3. Header Back Direct Menu
+- `Header.svelte` `goBack()` `history.back()` → `goto` direct menu: `/harian/*`→`/harian`, `/cuaca/*`→`/cuaca`, `/tentang`→`/tentang`, else `/` — semua tab konsisten, tidak ikut history klik
+- Validasi: `/harian/kalender` klik ← → `/harian`
+
+### 4. Docs
+- `AGENTS.md` §1/4/5/6/7/9/12 update harga pivot + trends + hari penting + header back
+- `README.md` harian + `ARCHITECTURE.md` sync
+- `DOC_JANGAN_GUNAKAN_DUMMY` §6 tren fallback
+
 ## Catatan Verifikasi Manual
 
 1. Buka `/market`.
