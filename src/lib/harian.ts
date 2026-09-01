@@ -29,17 +29,17 @@ export interface GempaData {
 	fetchedAt: string;
 }
 
-/** Harga harian (emas/sembako/BBM) */
+/** Harga harian (logam/tren/BBM) — pivot 2026-09-01: sembako Rp/kg → tren 0-100 */
 export interface HargaItem {
 	id: string;
 	nama: string;
-	grup: 'emas' | 'sembako' | 'bbm';
+	grup: 'logam' | 'tren' | 'bbm';
 	satuan: string;
-	/** null = sumber gagal → jangan tampil angka (no dummy) */
+	/** null = sumber gagal → jangan tampil angka (no dummy); tren: skor 0-100 */
 	harga: number | null;
 	change24h: number | null;
 	sumber: string;
-	/** true = nilai estimasi (mis. emas via PAXG), wajib badge 'est' */
+	/** true = nilai estimasi (mis. logam via PAXG/KAG), wajib badge 'est' */
 	estimasi?: boolean;
 }
 
@@ -48,7 +48,7 @@ export interface HargaData {
 	fetchedAt: string;
 }
 
-/** Kalender Hijriah + hari libur terdekat */
+/** Kalender Hijriah + hari libur terdekat + hari penting bulan ini */
 export interface KalenderData {
 	/** label siap tampil: "Jumat, 29 Agustus 2026" */
 	gregorianLabel: string;
@@ -56,6 +56,9 @@ export interface KalenderData {
 	hijriLabel: string;
 	/** libur terdekat dalam 30 hari, null jika tidak ada */
 	holiday: { name: string; date: string; daysUntil: number; isLibur: boolean } | null;
+	/** hari penting nasional bulan ini (gabungan Nager libur + kurasi statis) — filter bulan berjalan */
+	hariBulan: Array<{ date: string; name: string; isLibur: boolean; isToday: boolean }>;
+	bulanLabel: string; // "September 2026"
 }
 
 /** Skor bola (ESPN EPL, Liga 1 Phase 2) */
@@ -77,5 +80,12 @@ export interface BolaMatch {
 
 export interface BolaData {
 	matches: BolaMatch[];
+	fetchedAt: string;
+}
+
+/** Tren Sembako Google Trends — skor 0-100, 7 hari, geo ID */
+export interface TrendsSembakoData {
+	keywords: string[];
+	series: Array<{ keyword: string; scores: number[]; avg: number; delta: number | null; last: number | null }>;
 	fetchedAt: string;
 }

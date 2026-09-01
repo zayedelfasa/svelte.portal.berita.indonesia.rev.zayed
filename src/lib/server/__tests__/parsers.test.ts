@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBmkgGempa, parseEspnScoreboard, parsePaxgPrice, parsePanganPrice } from '../parsers';
+import { parseBmkgGempa, parseEspnScoreboard, parseLogamPrice, parsePanganPrice, parsePaxgPrice } from '../parsers';
 
 describe('BMKG parser', () => {
 	it('normalizes valid earthquake payload', () => {
@@ -38,8 +38,19 @@ describe('Harga parser', () => {
 		expect(result.change24h).toBe(1.5);
 	});
 
-	it('rejects malformed PAXG and pangan payloads', () => {
-		expect(parsePaxgPrice({}).harga).toBeNull();
+	it('parses logam PAXG+KAG and rejects malformed', () => {
+		const logam = parseLogamPrice({
+			'pax-gold': { idr: 31_103_476.8, idr_24h_change: 1.5 },
+			'kinesis-silver': { idr: 1_185_163, idr_24h_change: 0.2 }
+		});
+		expect(logam.emas.harga).toBeCloseTo(1_000_000);
+		expect(logam.perak.harga).toBeCloseTo(1_185_163 / 31.1034768);
+		expect(logam.perak.change24h).toBe(0.2);
+		expect(parseLogamPrice({}).emas.harga).toBeNull();
+		expect(parseLogamPrice({}).perak.harga).toBeNull();
+	});
+
+	it('keeps pangan parser deprecated but functional', () => {
 		expect(parsePanganPrice({ data: [] })).toEqual([]);
 		expect(parsePanganPrice([{ nama: 'Beras', harga: '13200', satuan: 'kg' }])).toEqual([{ id: 'beras', nama: 'Beras', harga: 13200, satuan: 'kg' }]);
 	});

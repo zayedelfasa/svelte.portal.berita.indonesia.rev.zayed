@@ -1,92 +1,91 @@
 import { cached, TTL } from './cache';
 import { fetchWithTimeout } from './http';
 import type { HargaData, HargaItem } from '$lib/harian';
-import { parsePaxgPrice, parsePanganPrice } from './parsers';
+import { parseLogamPrice } from './parsers';
 
 const fmt = (n: number) => Math.round(n).toLocaleString('id-ID');
 
 /**
- * Harga harian — 3 grup: Emas / Sembako / BBM.
+ * Harga harian — 3 grup: Logam (PAXG+KAG) / Tren (embed, no fetch) / BBM+LPG statis.
  * No-dummy: sumber gagal → harga null → card/row disembunyikan (jujur).
- * BBM = harga resmi resmi Pertamina (statis, update manual saat kebijakan berubah).
+ * BBM+LPG = harga resmi Pertamina statis (update manual saat kebijakan berubah).
+ * pangan.go.id DIHAPUS 2026-09-01 — jangan kembalikan (95% null + timeout).
  */
 
-/** Emas via PAXG (token 1:1 emas fisik) di CoinGecko — proksi harga emas dunia, bukan Antam resmi → estimasi */
-async function fetchEmas(): Promise<{ harga: number | null; change24h: number | null }> {
+/** Logam via CoinGecko: pax-gold (emas) + kinesis-silver (perak) → proksi dunia, bukan Antam → estimasi */
+async function fetchLogam(): Promise<{
+	emas: { harga: number | null; change24h: number | null };
+	perak: { harga: number | null; change24h: number | null };
+}> {
 	try {
-		const res = await fetchWithTimeout('https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=idr&include_24hr_change=true', { headers: { accept: 'application/json' } }, 7000);
-		if (!res.ok) throw new Error(`coingecko emas ${res.status}`);
-		return parsePaxgPrice(await res.json());
+		const res = await fetchWithTimeout(
+			'https://api.coingecko.com/api/v3/simple/price?ids=pax-gold,kinesis-silver&vs_currencies=idr&include_24hr_change=true',
+			{ headers: { accept: 'application/json' } },
+			7000
+		);
+		if (!res.ok) throw new Error(`coingecko logam ${res.status}`);
+		return parseLogamPrice(await res.json());
 	} catch {
-		return { harga: null, change24h: null };
+		return {
+			emas: { harga: null, change24h: null },
+			perak: { harga: null, change24h: null }
+		};
 	}
 }
 
-const SEMBAKO_NAMA: Array<{ id: string; nama: string; satuan: string }> = [
-	{ id: 'beras', nama: 'Beras Premium', satuan: 'kg' },
-	{ id: 'gula', nama: 'Gula Pasir', satuan: 'kg' },
-	{ id: 'minyak', nama: 'Minyak Goreng', satuan: 'liter' },
-	{ id: 'telur', nama: 'Telur Ayam', satuan: 'kg' },
-	{ id: 'ayam', nama: 'Daging Ayam', satuan: 'kg' }
-];
-
-/**
- * Sembako — API pangan.go.id sering CORS/rate-limit & panelharga butuh render JS.
- * Pendekatan jujur: jika API gagal → null (jangan tampil angka palsu).
- * Estimasi dari harga USD rata-rata BPS/panelharga TIDAK dipakai (no-dummy policy).
- */
-async function fetchSembako(): Promise<Array<{ id: string; nama: string; satuan: string; harga: number | null }>> {
-	try {
-		const res = await fetchWithTimeout('https://api.pangan.go.id/api/harga', { headers: { accept: 'application/json' } }, 7000);
-		if (!res.ok) throw new Error(`pangan ${res.status}`);
-		const j = (await res.json()) as unknown;
-		// Bentuk response tidak terdokumentasi stabil — validasi defensif
-		const out = parsePanganPrice(j);
-		if (out.length === 0) throw new Error('pangan kosong setelah parse');
-		return out;
-	} catch {
-		// No-dummy: return baris nama dengan harga null (bukan harga palsu)
-		return SEMBAKO_NAMA.map((s) => ({ id: s.id, nama: s.nama, satuan: s.satuan, harga: null }));
-	}
-}
-
-const BBM: Array<{ id: string; nama: string; satuan: string; harga: number }> = [
+const BBM: Array<{ id: string; nama: string; satuan: string; harga: number; catatan?: string }> = [
 	{ id: 'pertalite', nama: 'Pertalite', satuan: 'liter', harga: 10000 },
 	{ id: 'pertamax', nama: 'Pertamax', satuan: 'liter', harga: 12900 },
 	{ id: 'pertamax-turbo', nama: 'Pertamax Turbo', satuan: 'liter', harga: 14900 },
-	{ id: 'solar-b35', nama: 'Solar B35', satuan: 'liter', harga: 6800 }
+	{ id: 'solar-b35', nama: 'Solar B35', satuan: 'liter', harga: 6800 },
+	{ id: 'lpg-3kg', nama: 'LPG 3kg (subsidi HET)', satuan: 'tabung', harga: 16000, catatan: 'HET subsidi ±16k, beda provinsi — cek pangkalan setempat' },
+	{ id: 'lpg-12kg', nama: 'Bright Gas 12kg', satuan: 'tabung', harga: 192000 }
 ];
 
 export async function fetchHarga(): Promise<HargaData> {
 	return cached(
 		'harga:harian',
 		async () => {
-			const [emasR, sembakoR] = await Promise.allSettled([fetchEmas(), fetchSembako()]);
+			const logamR = await fetchLogam();
 
 			const items: HargaItem[] = [];
 
-			if (emasR.status === 'fulfilled') {
+			// Logam Mulia — 2 row
+			items.push({
+				id: 'emas',
+				nama: 'Emas (per gram)',
+				grup: 'logam',
+				satuan: 'gram',
+				harga: logamR.emas.harga,
+				change24h: logamR.emas.change24h,
+				sumber: 'CoinGecko PAXG',
+				estimasi: true
+			});
+			items.push({
+				id: 'perak',
+				nama: 'Perak (per gram)',
+				grup: 'logam',
+				satuan: 'gram',
+				harga: logamR.perak.harga,
+				change24h: logamR.perak.change24h,
+				sumber: 'CoinGecko KAG',
+				estimasi: true
+			});
+
+			// BBM & LPG — 6 row statis
+			for (const b of BBM) {
 				items.push({
-					id: 'emas',
-					nama: 'Emas (per gram)',
-					grup: 'emas',
-					satuan: 'gram',
-					harga: emasR.value.harga,
-					change24h: emasR.value.change24h,
-					sumber: 'CoinGecko PAXG',
-					estimasi: true
+					id: b.id,
+					nama: b.nama,
+					grup: 'bbm',
+					satuan: b.satuan,
+					harga: b.harga,
+					change24h: null,
+					sumber: 'Pertamina (resmi)'
 				});
 			}
 
-			if (sembakoR.status === 'fulfilled') {
-				for (const s of sembakoR.value) {
-					items.push({ id: s.id, nama: s.nama, grup: 'sembako', satuan: s.satuan, harga: s.harga, change24h: null, sumber: 'pangan.go.id' });
-				}
-			}
-
-			for (const b of BBM) {
-				items.push({ id: b.id, nama: b.nama, grup: 'bbm', satuan: b.satuan, harga: b.harga, change24h: null, sumber: 'Pertamina (resmi)' });
-			}
+			// Tren sembako tidak masuk items server (embed client B1) — jangan push grup 'tren' di sini
 
 			if (items.every((i) => i.harga == null)) throw new Error('semua sumber harga gagal');
 

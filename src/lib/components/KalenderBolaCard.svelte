@@ -37,6 +37,23 @@
 				{#if kalender.holiday.isLibur}<span class="rounded bg-red-500 px-1 py-0.5 text-[9px] font-bold uppercase text-white">Libur</span>{/if}
 			</p>
 		{/if}
+		{#if kalender.hariBulan && kalender.hariBulan.length > 0}
+			<div class="mt-3 border-t border-gray-100 pt-3 dark:border-neutral-800">
+					<p class="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-neutral-400">Hari penting — {kalender.bulanLabel}</p>
+				<ul class="mt-2 space-y-1.5">
+					{#each kalender.hariBulan.slice(0,4) as h (h.date + '|' + h.name)}
+						<li class="flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-xs {h.isToday ? 'bg-amber-50 font-semibold text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : 'bg-gray-50 text-gray-700 dark:bg-neutral-800 dark:text-neutral-300'}">
+							<span class="flex items-center gap-2">
+								<span class="inline-flex min-w-9 justify-center rounded bg-white px-1.5 py-0.5 text-[11px] font-bold text-gray-700 dark:bg-neutral-700 dark:text-neutral-200">{h.date.slice(8,10)}/{h.date.slice(5,7)}</span>
+								<span class="leading-tight">{h.name}{#if h.isToday} <span class="ml-1 rounded bg-amber-500 px-1 py-0.5 text-[8px] font-bold uppercase text-white">Hari ini</span>{/if}</span>
+							</span>
+							{#if h.isLibur}<span class="shrink-0 rounded bg-red-500 px-1 py-0.5 text-[9px] font-bold uppercase text-white">Libur</span>{/if}
+						</li>
+					{/each}
+				</ul>
+				{#if kalender.hariBulan.length > 4}<p class="mt-1.5 text-[11px] text-gray-500 dark:text-neutral-400">+{kalender.hariBulan.length - 4} lagi bulan ini • <a href="/harian/kalender" class="font-semibold text-red-500 hover:underline dark:text-red-400">lihat semua</a></p>{/if}
+			</div>
+		{/if}
 	{:else}
 		<p class="mt-2 text-xs text-gray-400 dark:text-neutral-500">Kalender tidak tersedia</p>
 	{/if}

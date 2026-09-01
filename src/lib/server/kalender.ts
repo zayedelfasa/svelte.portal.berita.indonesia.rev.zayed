@@ -1,6 +1,7 @@
 import { cached, TTL } from './cache';
 import { fetchWithTimeout } from './http';
 import type { KalenderData } from '$lib/harian';
+import { HARI_PENTING } from '$lib/hariPenting';
 
 const JAKARTA_TZ = 'Asia/Jakarta';
 
@@ -72,19 +73,26 @@ async function fetchHolidays(year: number): Promise<Array<{ name: string; date: 
 	return out;
 }
 
-/** Kalender harian: label Masehi + Hijriah + libur terdekat ≤30 hari. Gagal sebagian → tetap return (label Masehi selalu ada). */
+/** Kalender harian: label Masehi + Hijriah + libur terdekat ≤30 hari + hari penting bulan ini. Gagal sebagian → tetap return (label Masehi selalu ada). */
 export async function fetchKalender(): Promise<KalenderData> {
 	const now = new Date();
 	const dateKey = ymdJakarta(now);
 	return cached(
 		`kalender:${dateKey}`,
 		async () => {
-			const data: KalenderData = { gregorianLabel: labelGregorian(now), hijriLabel: '', holiday: null };
+			const data: KalenderData = { gregorianLabel: labelGregorian(now), hijriLabel: '', holiday: null, hariBulan: [], bulanLabel: '' };
 
-			const [hijriR, liburR] = await Promise.allSettled([fetchHijri(dateKey), fetchHolidays(now.getFullYear())]);
+			const month = Number(dateKey.slice(5, 7));
+			const year = Number(dateKey.slice(0, 4));
+			data.bulanLabel = new Intl.DateTimeFormat('id-ID', { timeZone: JAKARTA_TZ, month: 'long', year: 'numeric' }).format(now);
+			// kapitalisasi: September 2026
+			data.bulanLabel = data.bulanLabel.charAt(0).toUpperCase() + data.bulanLabel.slice(1);
+
+			const [hijriR, liburR] = await Promise.allSettled([fetchHijri(dateKey), fetchHolidays(year)]);
 
 			if (hijriR.status === 'fulfilled') data.hijriLabel = hijriR.value;
 
+			let holidaysInMonth: Array<{ date: string; name: string; isLibur: boolean }> = [];
 			if (liburR.status === 'fulfilled' && liburR.value.length > 0) {
 				const today = dateKey;
 				const upcoming = liburR.value
@@ -96,9 +104,28 @@ export async function fetchKalender(): Promise<KalenderData> {
 					const daysUntil = Math.max(0, Math.round((new Date(`${h.date}T00:00:00+07:00`).getTime() - new Date(`${today}T00:00:00+07:00`).getTime()) / 86400000));
 					if (daysUntil <= 30) data.holiday = { name: h.name, date: h.date, daysUntil, isLibur: h.isLibur };
 				}
+				holidaysInMonth = liburR.value.filter((h) => h.date.slice(5, 7) === String(month).padStart(2, '0') && h.date.startsWith(String(year)));
 			}
 
-			if (!data.hijriLabel && !data.holiday) throw new Error('kalender: hijri & libur sama-sama gagal');
+			// gabung hari penting statis bulan ini + libur Nager bulan ini
+			const prefix = `${year}-${String(month).padStart(2, '0')}-`;
+			const staticList = (HARI_PENTING[month] ?? []).map((r) => ({
+				date: `${prefix}${String(r.day).padStart(2, '0')}`,
+				name: r.name,
+				isLibur: false
+			}));
+			const merged = new Map<string, { date: string; name: string; isLibur: boolean }>();
+			for (const h of [...staticList, ...holidaysInMonth]) {
+				const key = `${h.date}|${h.name}`;
+				if (!merged.has(key)) merged.set(key, h);
+				// libur menang jika duplikat tanggal sama
+				else if (h.isLibur) merged.set(key, h);
+			}
+			data.hariBulan = [...merged.values()]
+				.sort((a, b) => a.date.localeCompare(b.date))
+				.map((h) => ({ ...h, isToday: h.date === dateKey }));
+
+			if (!data.hijriLabel && !data.holiday && data.hariBulan.length === 0) throw new Error('kalender: hijri & libur sama-sama gagal');
 			return data;
 		},
 		TTL.hijri

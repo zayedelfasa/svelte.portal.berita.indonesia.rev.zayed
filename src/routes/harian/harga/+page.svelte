@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { timeAgo } from '$lib/time';
 	import type { HargaData, HargaItem } from '$lib/harian';
+	import TrenSembakoCard from '$lib/components/TrenSembakoCard.svelte';
 
 	let { data } = $props();
 
 	let harga = $derived(data.harga as HargaData | null);
 
 	const GROUPS: Array<{ key: HargaItem['grup']; label: string; catatan: string }> = [
-		{ key: 'emas', label: '🥇 Emas', catatan: 'Proksi PAXG (emas dunia) — bukan harga resmi Antam' },
-		{ key: 'sembako', label: '🌾 Sembako', catatan: 'Sumber: pangan.go.id / panelharga' },
-		{ key: 'bbm', label: '⛽ BBM', catatan: 'Harga resmi Pertamina' }
+		{ key: 'logam', label: '🥇 Logam Mulia', catatan: 'Proksi PAXG (emas) + KAG (perak) dunia — bukan harga Antam resmi, est per gram' },
+		{ key: 'bbm', label: '⛽ BBM & LPG', catatan: 'Harga resmi Pertamina — LPG 3kg HET subsidi ±16k (beda provinsi, cek pangkalan)' }
 	];
 
 	const fmt = (n: number) => Math.round(n).toLocaleString('id-ID');
@@ -41,6 +41,9 @@
 									{r.nama}
 									{#if r.harga == null}<span class="ml-1 text-[10px] text-gray-400">(tidak tersedia)</span>{/if}
 									{#if r.estimasi}<span class="ml-1 rounded bg-gray-100 px-1 py-0.5 align-middle text-[9px] font-semibold uppercase text-gray-500 dark:bg-neutral-800 dark:text-neutral-400">est</span>{/if}
+									{#if r.change24h != null}
+										<span class="ml-1 text-[10px] font-semibold {r.change24h >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}">{r.change24h >= 0 ? '↗' : '↘'} {r.change24h.toFixed(2)}%</span>
+									{/if}
 								</span>
 								<span class="shrink-0 font-semibold text-gray-900 dark:text-neutral-100">
 									{#if r.harga != null}{fmt(r.harga)} <span class="text-[10px] font-normal text-gray-400">/{r.satuan}</span>{/if}
@@ -52,7 +55,10 @@
 				</div>
 			{/if}
 		{/each}
-		<p class="text-[10px] text-gray-400 dark:text-neutral-500">Diperbarui {timeAgo(harga.fetchedAt)}</p>
+
+		<TrenSembakoCard trends={data.trends} />
+
+		<p class="text-[10px] leading-relaxed text-gray-400 dark:text-neutral-500">Skor tren = minat pencarian Google, bukan harga transaksi. Harga bervariasi per daerah/pasar. • Diperbarui {timeAgo(harga.fetchedAt)}</p>
 	{:else}
 		<div class="rounded-xl border border-gray-100 bg-white px-4 py-6 text-center dark:border-neutral-800 dark:bg-neutral-900">
 			<p class="text-sm text-gray-500 dark:text-neutral-400">Data harga sementara tidak tersedia.</p>

@@ -61,11 +61,27 @@ export function parseEspnScoreboard(payload: unknown, league = 'Premier League')
 }
 
 export function parsePaxgPrice(payload: unknown): { harga: number | null; change24h: number | null } {
-	const gold = (payload as { 'pax-gold'?: { idr?: number; idr_24h_change?: number } })?.['pax-gold'];
-	if (!gold || !Number.isFinite(gold.idr)) return { harga: null, change24h: null };
+	const r = parseLogamPrice(payload);
+	return r.emas;
+}
+
+export function parseLogamPrice(payload: unknown): {
+	emas: { harga: number | null; change24h: number | null };
+	perak: { harga: number | null; change24h: number | null };
+} {
+	const j = (payload ?? {}) as Record<string, { idr?: number; idr_24h_change?: number }>;
+	const toGram = (v?: number) => (Number.isFinite(v) ? (v as number) / 31.1034768 : null);
+	const gold = j['pax-gold'];
+	const silver = j['kinesis-silver'] ?? j['tether-silver'] ?? j['silver-token'];
 	return {
-		harga: (gold.idr as number) / 31.1034768,
-		change24h: Number.isFinite(gold.idr_24h_change) ? gold.idr_24h_change! : null
+		emas: {
+			harga: gold && Number.isFinite(gold.idr) ? toGram(gold.idr) : null,
+			change24h: gold && Number.isFinite(gold.idr_24h_change) ? gold.idr_24h_change! : null
+		},
+		perak: {
+			harga: silver && Number.isFinite(silver.idr) ? toGram(silver.idr) : null,
+			change24h: silver && Number.isFinite(silver.idr_24h_change) ? silver.idr_24h_change! : null
+		}
 	};
 }
 
@@ -83,7 +99,7 @@ export function parseTheSportsDb(payload: unknown, league = 'Liga 1'): BolaMatch
 	});
 }
 
-/** Pangan API parser defensif — response invalid → null rows, bukan angka palsu. */
+/** @deprecated pangan.go.id dihapus 2026-09-01 — pertahankan stub agar test lama tidak crash, jangan dipakai lagi. */
 export function parsePanganPrice(payload: unknown): Array<{ id: string; nama: string; satuan: string; harga: number }> {
 	if (!Array.isArray(payload)) return [];
 	return payload.flatMap((row) => {

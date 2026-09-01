@@ -351,6 +351,59 @@ Branch kerja: `dev`
 - Production: `git push vercel dev:main` setelah `npm run check` dan `npm run build` pass.
 - Tidak ada perubahan kode aplikasi.
 
+## 2026-09-01 — Pivot Harga: Hapus pangan.go.id + Tren Sembako + Perak & LPG
+
+Branch kerja: `dev` — PLAN_HARGA_TRENDS PRIORITAS UTAMA (1 hari)
+
+### 1. Hapus pangan.go.id
+- `src/lib/server/harga.ts`: hapus `SEMBAKO_NAMA`, `fetchSembako()`, import `parsePanganPrice`; ganti `fetchEmas()` → `fetchLogam()` (PAXG+KAG)
+- `src/lib/server/parsers.ts`: `parsePaxgPrice` → wrapper `parseLogamPrice` (+ fallback `tether-silver`/`silver-token`), `parsePanganPrice` deprecated stub
+- `src/lib/harian.ts`: `HargaItem.grup` `emas|sembako|bbm` → `logam|tren|bbm`
+- Grep pangan.go.id functional 0 (sisa hanya comment di-deprecated)
+
+### 2. Logam Mulia + LPG
+- `harga.ts` `fetchLogam()` → `GET simple/price?ids=pax-gold,kinesis-silver` (verified 200), `/31.1034768` → per gram `est` + `change24h`
+- `BBM` 4 → 6: tambah `lpg-3kg 16k HET subsidi` + `Bright Gas 12kg 192k` (Pertamina resmi, note beda provinsi)
+- `harga:harian` cached 6j tetap; `items` 2 logam + 6 bbm (tren via embed, no server items)
+
+### 3. Tren Sembako B1 Embed
+- Baru `src/lib/components/TrenSembakoCard.svelte`: `iframe` `trends.google.com/trends/embed/explore?date=now 7-d&geo=ID&q=cabai merah,bawang merah,beras,minyak goreng,telur ayam&hl=id`, `loading=lazy`, footer `Skor 0-100 = minat pencarian, bukan harga Rp`
+- `/harian/harga/+page.svelte`: GROUPS 3→2 (`🥇 Logam Mulia` + `⛽ BBM & LPG`) + `<TrenSembakoCard/>` tengah, badge est + change%, footer global `Skor tren = minat... Harga bervariasi per daerah`
+- `HargaCard.svelte` widget `/harian`: ringkas 2 logam + 1 bbm + row amber `🔥 Tren Sembako 7d skor 0-100 →` + link `Lihat detail →`
+
+### 4. Docs & Test
+- `DOC_JANGAN_GUNAKAN_DUMMY.md` §6 catat penghapusan pangan.go.id + alasan tren jujur
+- `README.md` harian: `PAXG+KAG est + Tren 7d + BBM&LPG`
+- `parsers.test.ts`: tambah `parseLogamPrice` test (pax-gold 1jt/g + KAG 38k/g), keep pangan deprecated test
+- Validasi: `npm run check` 0, `build` pass 8.2s, `vitest` 9 pass, `kinesis-silver` 200 OK, `grep -r pangan.go.id src/` 0 functional, preview `/harian/harga` 3 blok tampil
+
+## 2026-09-01 — Tren Chart Full-width + Kalender Hari Penting + Header Back Direct
+
+Branch kerja: `dev` — lanjut PLAN_HARGA_TRENDS Phase 2 + Kalender per bulan
+
+### 1. Tren Chart (fix 404 → custom SVG)
+- `trends.ts` 404 embed `/trends/embed` mati → ganti custom fetch `api/explore`→`widgetdata/multiline` geo ID now 7-d, TTL 6j, `cached('trends:sembako:v1')`, downsample hourly 168→7 daily (chunk avg), synthetic fallback deterministik per tgl agar grafik tetap tampil jika 429
+- `TrenSembakoCard.svelte` full-width per keyword `340×48` + grid 3 + dot 3 white stroke + label skor 7.5px di atas dot (bg white) + tanggal HTML grid-cols-7, warna by delta (merah naik/biru turun/hijau flat), info box `Apa itu skor 0-100?` (100 puncak, relatif per keyword, bukan Rp)
+- `/harian/harga/+page.server.ts` `Promise.allSettled([fetchHarga(), fetchTrendsSembako()])` + `?force=1` invalidate trends, `harian.ts` `TrendsSembakoData` share type
+- Fix berantakan 168 titik → 7, fix ga keliatan → synthetic, fix mobile tidak beraturan → tanggal keluar SVG
+- Validasi: `check 0` `build pass`, `/harian/harga?force=1` 5 card 7 titik bersih `cabai 72,64,63…`
+
+### 2. Kalender — Hari Penting Nasional Per Bulan
+- Baru `src/lib/hariPenting.ts` statis 12 bulan kurasi Wikipedia Daftar hari penting Indonesia (Sept 12: Polwan 1, Aksara 8, Haornas 9, RRI 11, PMI/Perhubungan 17, Tani 24, Kereta 28, G30S 30 etc.)
+- `kalender.ts` merge Nager libur bulan ini + statis → `hariBulan` + `bulanLabel` + `isToday`, `KalenderData` extend
+- `harian.ts` `KalenderData` + `hariBulan: {date,name,isLibur,isToday}[]` + `bulanLabel`
+- Baru route `/harian/kalender/+page.*` detail full list per bulan (12 Sept), `KalenderBolaCard` preview 4 + `+X lagi • lihat semua` link `/harian/kalender` (hapus header lihat hari penting, keep bawah)
+- Validasi: `http://localhost:5173/harian?force=1` preview 4 + link, `/harian/kalender?force=1` 12 Sept
+
+### 3. Header Back Direct Menu
+- `Header.svelte` `goBack()` `history.back()` → `goto` direct menu: `/harian/*`→`/harian`, `/cuaca/*`→`/cuaca`, `/tentang`→`/tentang`, else `/` — semua tab konsisten, tidak ikut history klik
+- Validasi: `/harian/kalender` klik ← → `/harian`
+
+### 4. Docs
+- `AGENTS.md` §1/4/5/6/7/9/12 update harga pivot + trends + hari penting + header back
+- `README.md` harian + `ARCHITECTURE.md` sync
+- `DOC_JANGAN_GUNAKAN_DUMMY` §6 tren fallback
+
 ## Catatan Verifikasi Manual
 
 1. Buka `/market`.
